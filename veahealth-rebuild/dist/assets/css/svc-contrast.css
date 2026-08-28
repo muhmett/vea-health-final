@@ -1,0 +1,46 @@
+/* ==========================================================================
+   Contrast repairs for the salvaged treatment pages.
+
+   The original design used one bright brand teal (#5BC8C2) for accent text on
+   both dark and light sections. Against the light sections that is about
+   1.9:1 — WCAG 1.4.3 asks for 4.5:1 — and no single teal can clear 4.5:1
+   against both #0f2428 and #f0fafa. So the accent resolves per surface: the
+   build tags every dark-backed section with data-surface="dark", and the
+   default below is the darker teal that light sections need.
+
+   Nothing here changes layout, spacing or type — only colour values that
+   failed the contrast threshold.
+   ========================================================================== */
+
+.svc-page{
+  --accent-on-light: #287772;   /* 4.6:1 on #fff, #f0fafa, #e2f5f5, #def4f3 */
+  --accent-on-dark:  #5BC8C2;   /* 6.2:1 on #0f2428 … #1a3840             */
+  --muted-on-dark:   #93A2A4;   /* 4.6:1 on the dark section grounds      */
+}
+
+/* accent text: dark teal by default, the brand teal inside dark sections */
+.svc-page :is(.label, .proc-tag, .cost-price, .ev-stat, .comp-check,
+              .title em, .sec-title em, h2 em, h3 em){
+  color: var(--accent-on-light);
+}
+.svc-page [data-surface="dark"] :is(.label, .proc-tag, .cost-price, .ev-stat,
+                                    .comp-check, .title em, .sec-title em,
+                                    h2 em, h3 em){
+  color: var(--accent-on-dark);
+}
+
+/* a white label on the bright teal chip was 2:1 — deepen the chip instead */
+.svc-page .cost-tag{ background: #2B817D; color: #fff; }
+
+/* muted copy inside dark sections */
+.svc-page [data-surface="dark"] :is(.comp-cross, .ev-src, .rec-note, .tl-note){
+  color: var(--muted-on-dark);
+}
+
+/* headings inside dark cards were set in the near-black ink */
+.svc-page [data-surface="dark"] :is(.rec-phase, .ev-card, .tl-item) :is(h3, h4){
+  color: #FFFFFF;
+}
+
+/* the hero sits on the dark ground on every treatment page */
+.svc-page .hero :is(.label, .hero-logo-text, .hero-card-label){ color: var(--accent-on-dark); }

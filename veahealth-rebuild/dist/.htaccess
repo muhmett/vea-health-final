@@ -1,0 +1,83 @@
+# ============================================================
+# VeaHealth Turkey — Apache configuration
+# Works as-is on Hostinger (LiteSpeed reads .htaccess).
+# ============================================================
+
+Options -Indexes
+ServerSignature Off
+
+# ---- canonical host: force https and strip www --------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://veahealthturkey.com/$1 [R=301,L]
+
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+  # pretty URLs -> the index.html inside each folder
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)$ /$1/ [R=301,L]
+</IfModule>
+
+ErrorDocument 404 /404.html
+
+# ---- redirects from the old WordPress URLs ------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^service/?$                        /services/ [R=301,L]
+  RewriteRule ^about-us/?$                       /about/ [R=301,L]
+  RewriteRule ^contact-us/?$                     /contact/ [R=301,L]
+  RewriteRule ^the-journey/?$                    /journey/ [R=301,L]
+  RewriteRule ^portail/?$                        /services/ [R=301,L]
+  RewriteRule ^home/?$                           / [R=301,L]
+  RewriteRule ^category/dental/?$                /blog/ [R=301,L]
+  RewriteRule ^author/.*$                        / [R=301,L]
+  RewriteRule ^services_category/.*$             /services/ [R=301,L]
+  RewriteRule ^services/immediate_dental_implants/?$ /services/immediate-dental-implants/ [R=301,L]
+  RewriteRule ^services/Hybrid-Prosthesis-Porcelain/?$ /services/hybrid-prosthesis-porcelain/ [R=301,L]
+  RewriteRule ^are-cosmetic-dentistry-operations-age-restricted/?$ /blog/are-cosmetic-dentistry-operations-age-restricted/ [R=301,L]
+  RewriteRule ^smile-makeover-transforming-confidence-through-dentistry/?$ /blog/smile-makeover-transforming-confidence-through-dentistry/ [R=301,L]
+
+  # the old WordPress surface no longer exists here
+  RewriteRule ^(wp-admin|wp-login\.php|wp-json|xmlrpc\.php|readme\.html|wp-content|wp-includes) - [R=410,L]
+</IfModule>
+
+# ---- security headers ---------------------------------------
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://www.google-analytics.com; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; upgrade-insecure-requests"
+  Header unset X-Powered-By
+</IfModule>
+
+# ---- compression --------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml text/xml application/xml
+</IfModule>
+
+# ---- caching ------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html                "access plus 1 hour"
+  ExpiresByType text/css                 "access plus 1 year"
+  ExpiresByType application/javascript   "access plus 1 year"
+  ExpiresByType image/webp               "access plus 1 year"
+  ExpiresByType image/svg+xml            "access plus 1 year"
+  ExpiresByType video/mp4                "access plus 1 year"
+  ExpiresByType font/woff2               "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|webp|svg|mp4|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+AddType image/webp .webp
