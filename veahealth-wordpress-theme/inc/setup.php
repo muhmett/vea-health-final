@@ -166,6 +166,26 @@ function veahealth_register_privacy_page( $page_id ) {
 function veahealth_activate() {
 	veahealth_register_types();
 	flush_rewrite_rules( true );
+
+	/*
+	 * Install the content on activation rather than waiting for someone to find
+	 * a button. Without it the treatment cards, results and journey sections
+	 * have nothing to render and the homepage looks broken — which is exactly
+	 * what happened the first time this shipped.
+	 *
+	 * The installer is idempotent and non-destructive: entries are matched by
+	 * slug and anything that already exists is left alone. It can still be
+	 * re-run by hand from Appearance -> VeaHealth setup.
+	 */
+	if ( ! get_option( 'veahealth_installed' ) && function_exists( 'veahealth_install_content' ) ) {
+		try {
+			$log = veahealth_install_content( false );
+			set_transient( 'veahealth_autoinstall_log', $log, HOUR_IN_SECONDS );
+		} catch ( Throwable $e ) {
+			// Never let a content problem white-screen theme activation.
+			set_transient( 'veahealth_autoinstall_error', $e->getMessage(), HOUR_IN_SECONDS );
+		}
+	}
 }
 add_action( 'after_switch_theme', 'veahealth_activate' );
 

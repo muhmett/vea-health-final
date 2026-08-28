@@ -481,9 +481,46 @@ function veahealth_setup_screen() {
 	<?php
 }
 
-/** Point the new owner at the setup screen the first time the theme runs. */
+/**
+ * Tell the owner what happened on activation, or — if the automatic install did
+ * not run for any reason — put an unmissable prompt in front of them.
+ */
 function veahealth_setup_notice() {
-	if ( get_option( 'veahealth_installed' ) || ! current_user_can( 'edit_theme_options' ) ) {
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		return;
+	}
+
+	$error = get_transient( 'veahealth_autoinstall_error' );
+	if ( $error ) {
+		delete_transient( 'veahealth_autoinstall_error' );
+		printf(
+			'<div class="notice notice-error"><p><strong>%s</strong> %s</p><p><a class="button button-primary" href="%s">%s</a></p></div>',
+			esc_html__( 'VeaHealth could not install its content automatically.', 'veahealth' ),
+			esc_html( $error ),
+			esc_url( admin_url( 'themes.php?page=veahealth-setup' ) ),
+			esc_html__( 'Try again', 'veahealth' )
+		);
+		return;
+	}
+
+	$log = get_transient( 'veahealth_autoinstall_log' );
+	if ( $log ) {
+		delete_transient( 'veahealth_autoinstall_log' );
+		printf(
+			'<div class="notice notice-success is-dismissible"><p><strong>%s</strong></p><ul style="list-style:disc;margin-left:20px">%s</ul><p>'
+				. '<a class="button button-primary" href="%s" target="_blank">%s</a> '
+				. '<a class="button" href="%s">%s</a></p></div>',
+			esc_html__( 'VeaHealth is installed. Your site is ready.', 'veahealth' ),
+			implode( '', array_map( static function ( $line ) { return '<li>' . esc_html( $line ) . '</li>'; }, (array) $log ) ),
+			esc_url( home_url( '/' ) ),
+			esc_html__( 'View the site', 'veahealth' ),
+			esc_url( admin_url( 'customize.php' ) ),
+			esc_html__( 'Set your contact details', 'veahealth' )
+		);
+		return;
+	}
+
+	if ( get_option( 'veahealth_installed' ) ) {
 		return;
 	}
 	$screen = get_current_screen();
@@ -491,10 +528,34 @@ function veahealth_setup_notice() {
 		return;
 	}
 	printf(
-		'<div class="notice notice-info"><p>%s <a class="button button-primary" href="%s">%s</a></p></div>',
-		esc_html__( 'VeaHealth is active. Install the treatment pages, company pages and menus in one step:', 'veahealth' ),
+		'<div class="notice notice-warning" style="border-left-width:6px;padding:14px 16px">'
+			. '<h2 style="margin:0 0 6px;font-size:16px">%s</h2><p style="margin:0 0 12px">%s</p>'
+			. '<p style="margin:0"><a class="button button-primary button-hero" href="%s">%s</a></p></div>',
+		esc_html__( 'One step left: install the VeaHealth content', 'veahealth' ),
+		esc_html__( 'The treatment pages, company pages and menus have not been created yet, so the homepage will look empty. This takes a few seconds.', 'veahealth' ),
 		esc_url( admin_url( 'themes.php?page=veahealth-setup' ) ),
-		esc_html__( 'Open setup', 'veahealth' )
+		esc_html__( 'Install the content now', 'veahealth' )
 	);
 }
 add_action( 'admin_notices', 'veahealth_setup_notice' );
+
+/**
+ * If the content is missing, say so on the front end too — but only to a logged
+ * in administrator, never to a visitor.
+ */
+function veahealth_frontend_setup_hint() {
+	if ( get_option( 'veahealth_installed' ) || ! current_user_can( 'edit_theme_options' ) || is_admin() ) {
+		return;
+	}
+	printf(
+		'<div style="position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#8a2e00;color:#fff;'
+			. 'padding:14px 20px;font:500 14px/1.5 system-ui,sans-serif;display:flex;gap:16px;'
+			. 'align-items:center;justify-content:center;flex-wrap:wrap">'
+			. '<span>%s</span><a href="%s" style="background:#fff;color:#8a2e00;padding:8px 16px;'
+			. 'border-radius:999px;text-decoration:none;font-weight:600">%s</a></div>',
+		esc_html__( 'Only you can see this: the VeaHealth content has not been installed yet, so these sections are empty.', 'veahealth' ),
+		esc_url( admin_url( 'themes.php?page=veahealth-setup' ) ),
+		esc_html__( 'Install it now', 'veahealth' )
+	);
+}
+add_action( 'wp_footer', 'veahealth_frontend_setup_hint', 99 );

@@ -9,45 +9,58 @@ get_header();
 
 $hero_image = get_theme_mod( 'veahealth_hero_image' );
 $hero_src   = $hero_image ? wp_get_attachment_image_url( $hero_image, 'full' ) : VEAHEALTH_URI . '/assets/img/art/hero-istanbul-bosphorus-1600.webp';
-$hero_lines = array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', (string) veahealth_option( 'hero_title' ) ) ) );
 $services   = get_posts( array( 'post_type' => 'service', 'posts_per_page' => 6, 'orderby' => 'menu_order', 'order' => 'ASC' ) );
 $results    = veahealth_results();
 $journey    = veahealth_journey();
 $svc_count  = (int) wp_count_posts( 'service' )->publish;
 ?>
 
-<section class="hero">
-	<div class="hero-media">
-		<?php if ( $hero_image ) : ?>
-			<img src="<?php echo esc_url( $hero_src ); ?>" alt="" width="2400" height="1005" fetchpriority="high" decoding="async">
-		<?php else : ?>
-			<img src="<?php echo esc_url( VEAHEALTH_URI . '/assets/img/art/hero-istanbul-bosphorus-1600.webp' ); ?>"
-			     srcset="<?php echo esc_attr( VEAHEALTH_URI . '/assets/img/art/hero-istanbul-bosphorus-1100.webp 1100w, ' . VEAHEALTH_URI . '/assets/img/art/hero-istanbul-bosphorus-1600.webp 1600w, ' . VEAHEALTH_URI . '/assets/img/art/hero-istanbul-bosphorus.webp 2400w' ); ?>"
-			     sizes="100vw"
-			     alt="<?php esc_attr_e( 'The Bosphorus at dawn with the Istanbul skyline in the distance', 'veahealth' ); ?>"
-			     width="2400" height="1005" fetchpriority="high" decoding="async">
-		<?php endif; ?>
+<section class="hero hero--film">
+	<div class="hero-film">
+		<!--
+			The still is what everyone sees first and what search engines index.
+			The film fades in only once it has buffered enough to be scrubbed,
+			and its playback position is driven by scroll, never by autoplay.
+		-->
+		<img src="<?php echo esc_url( $hero_src ); ?>"
+		     alt="<?php esc_attr_e( 'The Bosphorus at dawn with the Istanbul skyline in the distance', 'veahealth' ); ?>"
+		     width="2400" height="1005" fetchpriority="high" decoding="async">
+		<?php
+		/*
+		 * Four candidate encodes, no <source> children: motion.js picks one
+		 * and assigns it. Sources in the markup would have the browser start
+		 * fetching before the choice is made, and the clip would arrive twice.
+		 * H.264 is preferred — it is the smaller file here — with VP9 for
+		 * builds without proprietary codecs, at two widths each.
+		 */
+		?>
+		<video muted playsinline preload="none" aria-hidden="true" tabindex="-1"
+		       data-src-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-1440.mp4' ); ?>"
+		       data-src-narrow="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.mp4' ); ?>"
+		       data-webm-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-1440.webm' ); ?>"
+		       data-webm-narrow="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.webm' ); ?>"
+		       poster="<?php echo esc_url( VEAHEALTH_URI . '/assets/img/film/hero-scrub-poster.webp' ); ?>"></video>
 	</div>
 
 	<div class="shell">
 		<div class="hero-inner">
 			<p class="eyebrow" data-anim="fade"><?php echo esc_html( veahealth_option( 'city' ) ); ?> · <?php esc_html_e( 'Türkiye', 'veahealth' ); ?></p>
-			<h1 class="reveal-lines"><?php echo wp_kses_post( implode( '<br>', array_map( 'esc_html', $hero_lines ) ) ); ?></h1>
-			<p class="lede" data-anim="up" style="--d:520ms"><?php echo esc_html( veahealth_option( 'hero_text' ) ); ?></p>
+			<h1 data-lines><?php echo esc_html( str_replace( "\n", ' ', veahealth_option( 'hero_title' ) ) ); ?></h1>
+			<p class="lede" data-anim="up" style="--d:200ms"><?php echo esc_html( veahealth_option( 'hero_text' ) ); ?></p>
 
-			<div class="hero-actions" data-anim="up" style="--d:640ms">
-				<a class="btn btn--primary btn--lg magnet" href="<?php echo esc_url( veahealth_contact_url() ); ?>">
+			<div class="hero-actions" data-anim="up" style="--d:320ms">
+				<a class="btn btn--primary btn--lg magnet" href="<?php echo esc_url( veahealth_contact_url() ); ?>" data-cursor="link">
 					<?php esc_html_e( 'Get a free assessment', 'veahealth' ); ?> <?php echo veahealth_icon( 'arrow' ); ?>
 				</a>
 				<?php $results_page = get_page_by_path( 'before-after' ); ?>
 				<?php if ( $results_page ) : ?>
-					<a class="btn btn--ghost btn--lg" href="<?php echo esc_url( get_permalink( $results_page ) ); ?>">
+					<a class="btn btn--ghost btn--lg" href="<?php echo esc_url( get_permalink( $results_page ) ); ?>" data-cursor="link">
 						<?php esc_html_e( 'See patient results', 'veahealth' ); ?>
 					</a>
 				<?php endif; ?>
 			</div>
 
-			<div class="hero-stats" data-anim="fade" style="--d:760ms">
+			<div class="hero-stats" data-anim="fade" style="--d:440ms">
 				<div class="hero-stat">
 					<div class="v num"><span data-count="<?php echo esc_attr( $svc_count ); ?>">0</span></div>
 					<div class="k"><?php esc_html_e( 'Treatments documented', 'veahealth' ); ?></div>
@@ -63,6 +76,8 @@ $svc_count  = (int) wp_count_posts( 'service' )->publish;
 			</div>
 		</div>
 	</div>
+
+	<div class="hero-scrub" aria-hidden="true"><span></span></div>
 </section>
 
 <?php veahealth_marquee(); ?>
@@ -141,7 +156,7 @@ $svc_count  = (int) wp_count_posts( 'service' )->publish;
 	</div>
 </section>
 
-<section class="section section--sand">
+<section class="section section--sand journey-rail">
 	<div class="shell">
 		<?php
 		veahealth_section_head(
@@ -150,22 +165,29 @@ $svc_count  = (int) wp_count_posts( 'service' )->publish;
 			__( 'No treatment is booked before you have a written plan and a fixed price. Everything after that is logistics, and the logistics are ours.', 'veahealth' )
 		);
 		?>
-		<div class="steps">
-			<?php foreach ( $journey as $j ) : ?>
-				<article class="step" data-anim="up">
-					<div class="step-n"></div>
-					<div>
-						<p class="step-meta"><?php echo esc_html( $j['meta'] ); ?></p>
-						<h3><?php echo esc_html( $j['title'] ); ?></h3>
-						<p><?php echo esc_html( $j['text'] ); ?></p>
-					</div>
-				</article>
-			<?php endforeach; ?>
-		</div>
+	</div>
+
+	<div class="journey-track">
+		<?php foreach ( $journey as $j_i => $j ) : ?>
+			<article class="journey-card">
+				<div class="journey-card__media">
+					<img src="<?php echo esc_url( VEAHEALTH_URI . '/assets/img/art/' . $j['img'] . '-900.webp' ); ?>"
+					     alt="<?php echo esc_attr( $j['alt'] ); ?>" width="900" height="562" loading="lazy" decoding="async">
+				</div>
+				<p class="journey-card__n"><?php echo esc_html( sprintf( '%02d', $j_i + 1 ) ); ?> · <?php echo esc_html( $j['meta'] ); ?></p>
+				<h3><?php echo esc_html( $j['title'] ); ?></h3>
+				<p><?php echo esc_html( $j['text'] ); ?></p>
+			</article>
+		<?php endforeach; ?>
+	</div>
+
+	<div class="journey-progress" aria-hidden="true"><span></span></div>
+
+	<div class="shell">
 		<?php $journey_page = get_page_by_path( 'journey' ); ?>
 		<?php if ( $journey_page ) : ?>
 			<p class="mt-32">
-				<a class="btn btn--ghost" href="<?php echo esc_url( get_permalink( $journey_page ) ); ?>">
+				<a class="btn btn--ghost" href="<?php echo esc_url( get_permalink( $journey_page ) ); ?>" data-cursor="link">
 					<?php esc_html_e( 'The journey in detail', 'veahealth' ); ?> <?php echo veahealth_icon( 'arrow' ); ?>
 				</a>
 			</p>

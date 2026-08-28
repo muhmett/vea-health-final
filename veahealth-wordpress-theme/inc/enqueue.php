@@ -29,7 +29,23 @@ function veahealth_assets() {
 		}
 	}
 
+	// The motion layer's own stylesheet. Small, and harmless when motion.js
+	// decides not to run — none of its classes get applied.
+	wp_enqueue_style( 'veahealth-motion', VEAHEALTH_URI . '/assets/css/motion.css', array( 'veahealth' ), $ver );
+
 	wp_enqueue_script( 'veahealth', VEAHEALTH_URI . '/assets/js/site.js', array(), $ver, true );
+
+	/*
+	 * motion.js is a ~9 KB loader. It fetches GSAP, ScrollTrigger and Lenis
+	 * itself, and only after checking that the visit can use them: a visitor
+	 * who has asked for reduced motion never downloads the 133 KB of libraries.
+	 */
+	wp_enqueue_script( 'veahealth-motion', VEAHEALTH_URI . '/assets/js/motion.js', array( 'veahealth' ), $ver, true );
+	wp_localize_script(
+		'veahealth-motion',
+		'VH_MOTION',
+		array( 'base' => VEAHEALTH_URI . '/assets' )
+	);
 	wp_localize_script(
 		'veahealth',
 		'veaHealth',

@@ -1,0 +1,391 @@
+/* ==========================================================================
+   VeaHealth — motion layer
+   Styles for the effects driven by assets/js/motion.js: the custom cursor, the
+   scroll-scrubbed hero film, the fullscreen menu, the pinned journey track and
+   the line-mask headline reveal.
+
+   Everything here is additive. If JavaScript never runs, none of these classes
+   are applied and the page renders exactly as it does without the motion layer.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Custom cursor
+   Pointer-fine devices only, and never when the visitor asks for less motion.
+   -------------------------------------------------------------------------- */
+.vh-cursor,
+.vh-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  pointer-events: none;
+  will-change: transform;
+  opacity: 0;
+  transition: opacity .3s var(--ease);
+}
+
+.vh-cursor {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 1px solid color-mix(in srgb, var(--teal) 55%, transparent);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  backdrop-filter: invert(0);
+}
+
+.vh-cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+
+.has-cursor .vh-cursor,
+.has-cursor .vh-cursor-dot { opacity: 1; }
+
+/* the label that appears inside the ring on media and sliders */
+.vh-cursor-label {
+  font-family: var(--f-mono);
+  font-size: .56rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--deep-ink);
+  opacity: 0;
+  transform: scale(.6);
+  white-space: nowrap;
+  transition: opacity .25s var(--ease), transform .25s var(--ease-out);
+}
+
+/* states, set from JS by reading data-cursor on the hovered element */
+.vh-cursor[data-state="link"]   { border-color: var(--teal); }
+.vh-cursor[data-state="media"],
+.vh-cursor[data-state="drag"]   {
+  background: var(--teal);
+  border-color: transparent;
+}
+.vh-cursor[data-state="media"] .vh-cursor-label,
+.vh-cursor[data-state="drag"]  .vh-cursor-label { opacity: 1; transform: none; }
+.has-cursor.cursor-hidden .vh-cursor,
+.has-cursor.cursor-hidden .vh-cursor-dot { opacity: 0; }
+
+/* hide the native cursor only once ours is actually running */
+.has-cursor,
+.has-cursor a,
+.has-cursor button,
+.has-cursor .ba { cursor: none; }
+/* …but never over something you type into */
+.has-cursor input,
+.has-cursor textarea,
+.has-cursor select { cursor: auto; }
+
+/* --------------------------------------------------------------------------
+   2. Scroll-scrubbed hero film
+   The clip does not play on its own: its currentTime is driven by scroll.
+   -------------------------------------------------------------------------- */
+.hero--film { min-height: 100vh; }
+
+.hero-film {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: var(--deep);
+}
+.hero-film video,
+.hero-film img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* the poster stays until the clip has enough data to be scrubbed */
+.hero-film video { opacity: 0; transition: opacity .8s var(--ease); }
+.hero-film.is-ready video { opacity: 1; }
+.hero-film.is-ready img { opacity: 0; }
+.hero-film img { transition: opacity .8s var(--ease); }
+
+.hero-film::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(6,20,22,.34) 0%, rgba(6,20,22,.12) 32%, rgba(6,20,22,.86) 100%),
+    radial-gradient(120% 80% at 15% 100%, rgba(6,20,22,.74), transparent 62%);
+}
+
+/* a thin progress rail showing how far through the film the scroll has gone */
+.hero-scrub {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 26px;
+  height: 1px;
+  background: rgba(255,255,255,.18);
+  overflow: hidden;
+}
+.hero-scrub span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--teal-bright);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+/* --------------------------------------------------------------------------
+   3. Headline reveal — one mask per line
+   -------------------------------------------------------------------------- */
+.js .vh-lines { overflow: hidden; }
+.js .vh-line { display: block; overflow: hidden; }
+.js .vh-line > span {
+  display: block;
+  transform: translateY(105%);
+  will-change: transform;
+}
+
+/* --------------------------------------------------------------------------
+   4. Fullscreen menu
+   -------------------------------------------------------------------------- */
+.menu-toggle {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-left: 12px;
+  padding: 10px 4px;
+  font-family: var(--f-mono);
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.menu-toggle .bars { display: block; width: 22px; }
+.menu-toggle .bars i {
+  display: block;
+  height: 1.4px;
+  background: currentColor;
+  transition: transform .45s var(--ease-out), opacity .3s;
+}
+.menu-toggle .bars i + i { margin-top: 5px; }
+.menu-toggle[aria-expanded="true"] .bars i:nth-child(1) { transform: translateY(6.4px) rotate(45deg); }
+.menu-toggle[aria-expanded="true"] .bars i:nth-child(2) { opacity: 0; }
+.menu-toggle[aria-expanded="true"] .bars i:nth-child(3) { transform: translateY(-6.4px) rotate(-45deg); }
+
+.vh-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: var(--deep);
+  color: var(--deep-ink);
+  display: grid;
+  grid-template-columns: 1.25fr .75fr;
+  visibility: hidden;
+  clip-path: inset(0 0 100% 0);
+}
+.vh-menu.is-open { visibility: visible; }
+.vh-menu__inner {
+  padding: clamp(90px, 12vh, 150px) clamp(24px, 6vw, 96px) 48px;
+  overflow-y: auto;
+  align-self: center;
+}
+.vh-menu__eyebrow {
+  font-family: var(--f-mono);
+  font-size: .66rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  margin-bottom: 26px;
+}
+.vh-menu__list { display: flex; flex-direction: column; gap: 2px; }
+.vh-menu__item { overflow: hidden; }
+.vh-menu__item > a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 6px 0;
+  font-family: var(--f-display);
+  font-size: clamp(2rem, 5.2vw, 3.6rem);
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -.02em;
+  color: var(--deep-ink);
+  text-decoration: none;
+  transform: translateY(105%);
+  transition: color .3s var(--ease);
+}
+.vh-menu__item > a .idx {
+  font-family: var(--f-mono);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  color: var(--teal-bright);
+  opacity: .7;
+}
+.vh-menu__item > a:hover,
+.vh-menu__item > a:focus-visible { color: var(--teal-bright); }
+
+.vh-menu__meta {
+  border-left: 1px solid var(--deep-line);
+  padding: clamp(90px, 12vh, 150px) clamp(24px, 4vw, 56px) 48px;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.vh-menu__meta h3 {
+  font-family: var(--f-mono);
+  font-size: .64rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--deep-ink-3);
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+.vh-menu__meta a { color: var(--deep-ink-2); text-decoration: none; }
+.vh-menu__meta a:hover { color: var(--teal-bright); }
+.vh-menu__preview {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--surface-2);
+  position: relative;
+}
+.vh-menu__preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.06);
+  transition: opacity .6s var(--ease), transform 1.2s var(--ease-out);
+}
+.vh-menu__preview img.is-active { opacity: 1; transform: none; }
+
+@media (max-width: 900px) {
+  .vh-menu { grid-template-columns: 1fr; }
+  .vh-menu__meta { display: none; }
+}
+
+/* the toggle replaces the burger once the motion layer is live */
+.has-motion .burger { display: none !important; }
+.has-motion .menu-toggle { display: inline-flex; }
+.has-motion .mobile-nav { display: none !important; }
+
+/* --------------------------------------------------------------------------
+   5. Pinned horizontal journey
+   -------------------------------------------------------------------------- */
+.journey-rail { position: relative; overflow: hidden; }
+.journey-track {
+  display: flex;
+  gap: clamp(20px, 3vw, 40px);
+  width: max-content;
+  padding-inline: var(--gutter);
+  align-items: stretch;
+}
+.journey-card {
+  width: min(76vw, 460px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: clamp(24px, 3vw, 38px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.journey-card__media {
+  border-radius: var(--r);
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background: var(--surface-2);
+}
+.journey-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.journey-card__n {
+  font-family: var(--f-mono);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  color: var(--teal);
+}
+.journey-card h3 { font-size: var(--step-2); }
+.journey-card p { color: var(--ink-2); font-size: .95rem; }
+
+.journey-progress {
+  height: 2px;
+  background: var(--line);
+  margin: 28px var(--gutter) 0;
+  overflow: hidden;
+}
+.journey-progress span {
+  display: block;
+  height: 100%;
+  background: var(--teal);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+/* --------------------------------------------------------------------------
+   6. Card media parallax
+   -------------------------------------------------------------------------- */
+.js .svc-card .svc-media { overflow: hidden; }
+.js .svc-card .svc-media img { will-change: transform; }
+
+/* --------------------------------------------------------------------------
+   6b. WebGL canvases
+
+   Each one sits exactly on top of the <img> it is drawing, so the photograph
+   underneath stays in the document — indexed, alt text intact, and visible the
+   instant the canvas is removed or never appears at all.
+   -------------------------------------------------------------------------- */
+.vh-gl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s var(--ease);
+}
+.vh-gl.is-on { opacity: 1; }
+
+.svc-media { position: relative; }
+/* the shader does its own zoom under the pointer — the CSS one would only
+   disagree with it for the length of the fade */
+.has-gl .svc-card:hover .svc-media img { transform: none; }
+
+/* the menu preview: once WebGL is drawing, the stacked <img>s are only there to
+   be read, so take them out of the paint rather than blending them together */
+.vh-menu__preview.has-gl img { opacity: 0 !important; transform: none !important; }
+.vh-gl--preview { transition: none; }
+
+/* --------------------------------------------------------------------------
+   7. Page transition veil
+   -------------------------------------------------------------------------- */
+.vh-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: var(--deep);
+  pointer-events: none;
+  transform: scaleY(0);
+  transform-origin: 50% 100%;
+}
+
+/* --------------------------------------------------------------------------
+   8. Reduced motion — everything above collapses to a plain, static page
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .vh-cursor,
+  .vh-cursor-dot,
+  .vh-veil,
+  .vh-gl { display: none !important; }
+  .vh-menu__preview.has-gl img { opacity: 1 !important; }
+  .has-cursor,
+  .has-cursor a,
+  .has-cursor button { cursor: auto; }
+  .js .vh-line > span { transform: none !important; }
+  .vh-menu__item > a { transform: none !important; }
+  .hero-film video { opacity: 1; }
+  .journey-track { width: auto; flex-wrap: wrap; }
+  .journey-card { width: 100%; }
+}

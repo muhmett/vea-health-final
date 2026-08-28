@@ -14,13 +14,21 @@ No page builder, no extra plugins, no external services at runtime.
    setting, your permalinks and your menus.
 2. **Appearance → Themes → Add New → Upload Theme**, choose
    `veahealth-wordpress-theme.zip`, **Install**, then **Activate**.
-3. A blue notice appears at the top of the admin. Click **Open setup** — or go
-   to **Appearance → VeaHealth setup**.
-4. Press **Install the content**. It takes a few seconds.
-5. Open the site. Everything is there.
+3. **The content installs itself.** Activation writes the 21 treatments, the
+   company and legal pages, the menus and the homepage setting, then rebuilds
+   the permalinks. A green notice at the top of the admin tells you what was
+   created.
+4. Open the site. Everything is there.
 
 Nothing already on your site is deleted. Pages are matched by slug: if one
-already exists it is left alone unless you tick the overwrite box.
+already exists it is left alone unless you tick the overwrite box on
+**Appearance → VeaHealth setup**.
+
+> Earlier builds waited for you to find an **Install the content** button.
+> If you never pressed it you got a header, a hero and a page of empty
+> sections — which is exactly what happened. Activation now does it for you,
+> and the setup screen is only there for re-running the import or overwriting
+> pages on purpose.
 
 ## Then set these four things
 
@@ -95,6 +103,72 @@ That is what was telling Google those treatment pages belonged somewhere else.
   `/the-journey/`, `/portail/`, `/home/`, `/services_category/…` and the two
   mis-cased treatment slugs.
 
+
+### Motion
+
+The theme ships its own motion layer. Nothing is loaded from a CDN and nothing
+is required for the site to work.
+
+| Effect | Where |
+|---|---|
+| Scroll-scrubbed hero film | Homepage. The clip does not autoplay — its playback position is your scroll position, and the thin rail at the bottom of the hero is how far through it you are |
+| Line-by-line headline reveal | Every `h1`/`h2` marked `data-lines`, split on measured line breaks so it re-splits correctly when the text rewraps |
+| Custom cursor | A ring that lags a dot and takes a label from whatever it is over. Mouse and wide screens only |
+| Fullscreen menu | Wipes open, the eight links rise in sequence, and the panel on the right previews the section you are pointing at |
+| Pinned horizontal journey | The four journey steps travel sideways while the page scrolls down |
+| Velocity marquee | The trust strip speeds up and reverses with the scroll |
+| Card hover, in WebGL | A treatment card's photograph bends toward the pointer with a faint chromatic split |
+| WebGL menu preview | One preview picture displaces out of frame as the next displaces in |
+| Page transitions | A dark veil wipes over on navigation |
+
+**How it loads.** `assets/js/motion.js` is a 22 KB loader. It checks the visit
+before it fetches anything, and only then pulls GSAP, ScrollTrigger and Lenis
+from `assets/js/vendor/`. `assets/js/gl.js` comes last and separately.
+
+**Who gets nothing, on purpose:**
+
+- anyone whose system asks for **reduced motion** — no libraries are fetched at all
+- anyone on a **phone or a touch screen** — no cursor, no WebGL, and the lighter
+  video encode
+- anyone on **Save-Data**, a 2G connection, or a device reporting under 4 GB of
+  memory — no WebGL
+- anyone with **JavaScript off** — the page is complete without it
+
+Reveals, counters, the burger menu and the enquiry form all live in `site.js`,
+never in `motion.js`. That is deliberate: if the motion layer fails to load,
+nothing that matters can end up stuck at opacity zero.
+
+**No Three.js.** The two WebGL effects are two full-screen quads with one
+fragment shader each. Three.js would be 160 KB gzipped of scene graph, camera
+and material system to draw them; `gl.js` is 14 KB and writes the WebGL calls
+directly. On a site whose leads depend on how fast a treatment page opens, that
+is worth the extra boilerplate.
+
+**One shared context.** The card hover uses a single canvas that moves to
+whichever card the pointer is over. Browsers cap live WebGL contexts — Chrome
+drops the oldest past sixteen — and the treatments archive shows twenty-one
+cards, so one canvas per card would start losing contexts as you scrolled.
+
+### The hero film, if you ever re-encode it
+
+The clip is seeked, not played, so **every frame has to be a keyframe** —
+otherwise the browser decodes forward from the last keyframe on each scroll tick
+and the film stutters:
+
+```
+ffmpeg -i source.mp4 -an -vf "scale=1440:-2,fps=24" \
+       -c:v libx264 -crf 26 -g 1 -bf 0 -pix_fmt yuv420p hero-scrub-1440.mp4
+```
+
+Four encodes ship: H.264 and VP9, at 1440 px and 900 px. `motion.js` picks
+exactly one — by what the browser can decode and how wide the screen is — and
+assigns it. There are deliberately **no `<source>` children** on the element:
+with them the browser starts fetching before the choice is made and the clip
+arrives twice, which on the homepage meant 2.8 MB instead of 907 KB.
+
+Your host must answer HTTP `Range` requests for scrubbing to work. Apache and
+LiteSpeed do; Hostinger is fine.
+
 ---
 
 ## Editing
@@ -125,11 +199,20 @@ Customizer. Everything else is ordinary editable content.
 Tested on WordPress 7.1 with PHP 8.4 before shipping:
 
 - 35 pages render, 0 PHP notices, 0 JavaScript errors, 0 failed requests
-- **0 accessibility violations** (axe-core, WCAG 2.1 AA, 11 pages × light and dark)
+- **0 accessibility violations** (axe-core, WCAG 2.1 AA, 11 pages × light and dark,
+  with the motion and WebGL layers running)
 - Enquiry form: validation, storage, admin listing and the WhatsApp hand-off all
   exercised end to end
 - Admin screens — setup, treatments, enquiries, customizer, menus — all clean
 - Permalinks rebuild themselves on activation, and again if anything wipes them
+- Content installs on activation, verified against a clean WordPress install
+- The three degraded paths, each checked in a real browser:
+  - **Reduced motion** — 0 bytes of GSAP, Lenis or WebGL fetched, every element
+    visible, the burger menu opens and navigates
+  - **No JavaScript** — 1,099 words and 123 working links on the homepage,
+    headline intact
+  - **Phone** — the 310 KB video encode, no custom cursor, no WebGL
+- One hover canvas at most across a 21-card archive: no context thrashing
 
 ---
 

@@ -52,6 +52,11 @@
 			</a>
 			<button class="burger" type="button" aria-expanded="false" aria-controls="mobile-nav"
 			        aria-label="<?php esc_attr_e( 'Open menu', 'veahealth' ); ?>"><span></span></button>
+
+			<button class="menu-toggle" type="button" aria-expanded="false" aria-controls="vh-menu">
+				<span class="label"><?php esc_html_e( 'Menu', 'veahealth' ); ?></span>
+				<span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
+			</button>
 		</div>
 	</div>
 </header>
@@ -78,6 +83,73 @@
 	<a class="btn btn--primary btn--block mt-24" href="<?php echo esc_url( veahealth_contact_url() ); ?>">
 		<?php esc_html_e( 'Free assessment', 'veahealth' ); ?>
 	</a>
+</nav>
+
+<?php
+/**
+ * The fullscreen menu. Rendered in the markup rather than built in JavaScript,
+ * so its links are real links: crawlable, and usable if the motion layer never
+ * loads (in which case it stays hidden and the plain menu takes over).
+ */
+$vh_menu_items = array();
+$vh_menu_items[] = array( 'label' => __( 'Home', 'veahealth' ), 'url' => home_url( '/' ) );
+$vh_menu_items[] = array( 'label' => __( 'All treatments', 'veahealth' ), 'url' => get_post_type_archive_link( 'service' ) );
+foreach ( veahealth_default_pages() as $vh_slug => $vh_label ) {
+	$vh_page = get_page_by_path( $vh_slug );
+	if ( $vh_page ) {
+		$vh_menu_items[] = array( 'label' => $vh_label, 'url' => get_permalink( $vh_page ) );
+	}
+}
+$vh_blog = get_option( 'page_for_posts' );
+if ( $vh_blog ) {
+	$vh_menu_items[] = array( 'label' => get_the_title( $vh_blog ), 'url' => get_permalink( $vh_blog ) );
+}
+$vh_menu_items[] = array( 'label' => __( 'Free assessment', 'veahealth' ), 'url' => veahealth_contact_url() );
+
+$vh_preview = array(
+	'art/hero-istanbul-bosphorus-1100.webp',
+	'clinic/vea-health-clinic-lounge-istanbul-900.webp',
+	'art/dsd-consultation-room-900.webp',
+	'results/hollywood-smile-zirconium-crowns-female-patient-900.webp',
+);
+?>
+<nav class="vh-menu" id="vh-menu" aria-label="<?php esc_attr_e( 'Main', 'veahealth' ); ?>">
+	<div class="vh-menu__inner">
+		<p class="vh-menu__eyebrow"><?php esc_html_e( 'Navigate', 'veahealth' ); ?></p>
+		<ul class="vh-menu__list">
+			<?php foreach ( $vh_menu_items as $vh_i => $vh_item ) : ?>
+				<li class="vh-menu__item">
+					<a href="<?php echo esc_url( $vh_item['url'] ); ?>" data-cursor="link">
+						<span class="idx"><?php echo esc_html( sprintf( '%02d', $vh_i + 1 ) ); ?></span>
+						<span><?php echo esc_html( $vh_item['label'] ); ?></span>
+					</a>
+				</li>
+			<?php endforeach; ?>
+		</ul>
+	</div>
+
+	<div class="vh-menu__meta">
+		<div class="vh-menu__preview" aria-hidden="true">
+			<?php foreach ( $vh_preview as $vh_img ) : ?>
+				<img src="<?php echo esc_url( VEAHEALTH_URI . '/assets/img/' . $vh_img ); ?>" alt="" loading="lazy" decoding="async">
+			<?php endforeach; ?>
+		</div>
+		<div>
+			<h3><?php esc_html_e( 'Talk to a coordinator', 'veahealth' ); ?></h3>
+			<?php if ( veahealth_option( 'email' ) ) : ?>
+				<p><a href="mailto:<?php echo esc_attr( veahealth_option( 'email' ) ); ?>"><?php echo esc_html( veahealth_option( 'email' ) ); ?></a></p>
+			<?php endif; ?>
+			<?php if ( veahealth_option( 'phone' ) ) : ?>
+				<p><a href="tel:<?php echo esc_attr( preg_replace( '/[^\d+]/', '', veahealth_option( 'phone' ) ) ); ?>"><?php echo esc_html( veahealth_option( 'phone' ) ); ?></a></p>
+			<?php endif; ?>
+		</div>
+		<div>
+			<h3><?php esc_html_e( 'Where we are', 'veahealth' ); ?></h3>
+			<p><?php echo esc_html( veahealth_option( 'street' ) ); ?><br>
+			<?php echo esc_html( veahealth_option( 'postcode' ) . ' ' . veahealth_option( 'district' ) ); ?><br>
+			<?php echo esc_html( veahealth_option( 'city' ) ); ?>, <?php esc_html_e( 'Türkiye', 'veahealth' ); ?></p>
+		</div>
+	</div>
 </nav>
 
 <main id="main">
