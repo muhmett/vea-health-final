@@ -95,24 +95,46 @@
   background: var(--deep);
 }
 .hero-film video,
+.hero-film canvas,
 .hero-film img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-/* the poster stays until the clip has enough data to be scrubbed */
-.hero-film video { opacity: 0; transition: opacity .8s var(--ease); }
-.hero-film.is-ready video { opacity: 1; }
-.hero-film.is-ready img { opacity: 0; }
+/*
+ * The <video> is a decoder, not a picture: motion.js copies each frame into the
+ * canvas, because a paused seek-only video does not reliably composite. It stays
+ * in the DOM and stays invisible.
+ */
+.hero-film video { opacity: 0 !important; }
+.hero-film canvas { opacity: 0; transition: opacity .8s var(--ease); }
+.hero-film.is-ready canvas { opacity: 1; }
+/* the still holds the frame until the canvas has one to show */
 .hero-film img { transition: opacity .8s var(--ease); }
+.hero-film.is-ready img { opacity: 0; }
 
+/*
+ * The scrim. It has to hold white text legible over every frame of the clip,
+ * and the clip runs from a dark waterline to a sunlit sky — so it is weighted
+ * across the text column rather than evenly, which keeps the skyline on the
+ * right readable instead of flattening the whole picture to protect one corner.
+ */
 .hero-film::after {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(6,20,22,.34) 0%, rgba(6,20,22,.12) 32%, rgba(6,20,22,.86) 100%),
-    radial-gradient(120% 80% at 15% 100%, rgba(6,20,22,.74), transparent 62%);
+    linear-gradient(90deg, rgba(6,20,22,.88) 0%, rgba(6,20,22,.78) 30%, rgba(6,20,22,.44) 56%, rgba(6,20,22,.16) 78%, rgba(6,20,22,.10) 100%),
+    linear-gradient(180deg, rgba(6,20,22,.42) 0%, rgba(6,20,22,.24) 30%, rgba(6,20,22,.72) 100%);
+}
+@media (max-width: 860px) {
+  /* the copy runs the full width on a phone, so the scrim has to as well */
+  .hero-film::after {
+    background:
+      linear-gradient(180deg, rgba(6,20,22,.62) 0%, rgba(6,20,22,.52) 30%, rgba(6,20,22,.86) 100%);
+  }
 }
 
 /* a thin progress rail showing how far through the film the scroll has gone */
@@ -385,7 +407,7 @@
   .has-cursor button { cursor: auto; }
   .js .vh-line > span { transform: none !important; }
   .vh-menu__item > a { transform: none !important; }
-  .hero-film video { opacity: 1; }
+  .hero-film canvas { opacity: 1; }
   .journey-track { width: auto; flex-wrap: wrap; }
   .journey-card { width: 100%; }
 }

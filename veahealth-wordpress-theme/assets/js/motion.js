@@ -190,7 +190,46 @@
     var bar = $('.hero-scrub span');
     var state = { t: 0 };
 
+    /*
+     * The frames are painted into a canvas rather than shown by the <video>
+     * itself.
+     *
+     * A paused, never-played, seek-only video is not something every browser
+     * composites: the element can hold a perfectly good decoded frame — you can
+     * read it with drawImage — and still paint as an empty black box. iOS
+     * Safari is the notorious case, and headless Chromium does it too, which is
+     * how this was caught. Copying each frame out with drawImage sidesteps the
+     * whole question: if the frame decoded, it appears.
+     */
+    var canvas = document.createElement('canvas');
+    canvas.setAttribute('aria-hidden', 'true');
+    var cx = canvas.getContext('2d');
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    wrap.appendChild(canvas);
+
+    function sizeCanvas() {
+      var r = wrap.getBoundingClientRect();
+      var w = Math.max(1, Math.round(r.width * dpr));
+      var h = Math.max(1, Math.round(r.height * dpr));
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    }
+
+    /** object-fit: cover, done by hand because a canvas has no such property. */
+    function draw() {
+      if (!video.videoWidth || video.readyState < 2) return;
+      var cw = canvas.width, ch = canvas.height;
+      var scale = Math.max(cw / video.videoWidth, ch / video.videoHeight);
+      var dw = video.videoWidth * scale, dh = video.videoHeight * scale;
+      cx.drawImage(video, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+    }
+
+    // a seek finishes asynchronously, so repaint when the frame actually lands
+    video.addEventListener('seeked', draw);
+    window.addEventListener('resize', function () { sizeCanvas(); draw(); }, { passive: true });
+
     function attach() {
+      sizeCanvas();
+      draw();
       wrap.classList.add('is-ready');
       var duration = video.duration || 5;
 
@@ -208,6 +247,7 @@
           // guard against seeking while the browser is still buffering
           if (video.readyState >= 2) {
             video.currentTime = Math.min(duration - 0.05, state.t * duration);
+            draw();
           }
           if (bar) bar.style.transform = 'scaleX(' + state.t.toFixed(3) + ')';
         }

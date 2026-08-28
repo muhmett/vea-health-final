@@ -23,23 +23,26 @@ $svc_count  = (int) wp_count_posts( 'service' )->publish;
 			and its playback position is driven by scroll, never by autoplay.
 		-->
 		<img src="<?php echo esc_url( $hero_src ); ?>"
-		     alt="<?php esc_attr_e( 'The Bosphorus at dawn with the Istanbul skyline in the distance', 'veahealth' ); ?>"
-		     width="2400" height="1005" fetchpriority="high" decoding="async">
+		     alt="<?php esc_attr_e( 'The Bosphorus at golden hour, an Ottoman mosque on the shoreline and a ferry crossing towards the Bosphorus bridge', 'veahealth' ); ?>"
+		     width="1600" height="900" fetchpriority="high" decoding="async">
 		<?php
 		/*
-		 * Four candidate encodes, no <source> children: motion.js picks one
+		 * Three candidate encodes, no <source> children: motion.js picks one
 		 * and assigns it. Sources in the markup would have the browser start
 		 * fetching before the choice is made, and the clip would arrive twice.
-		 * H.264 is preferred — it is the smaller file here — with VP9 for
-		 * builds without proprietary codecs, at two widths each.
+		 * H.264 at two widths, plus one VP9 file for the rare build without
+		 * proprietary codecs — VP9 is three times the size at all-intra, so
+		 * that fallback is the narrow encode whatever the screen.
+		 *
+		 * No poster attribute: the still above is already that exact frame, and
+		 * a poster would only be a second copy of it, fetched and never seen.
 		 */
 		?>
 		<video muted playsinline preload="none" aria-hidden="true" tabindex="-1"
-		       data-src-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-1440.mp4' ); ?>"
+		       data-src-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-1280.mp4' ); ?>"
 		       data-src-narrow="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.mp4' ); ?>"
-		       data-webm-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-1440.webm' ); ?>"
-		       data-webm-narrow="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.webm' ); ?>"
-		       poster="<?php echo esc_url( VEAHEALTH_URI . '/assets/img/film/hero-scrub-poster.webp' ); ?>"></video>
+		       data-webm-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.webm' ); ?>"
+		       data-webm-narrow="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.webm' ); ?>"></video>
 	</div>
 
 	<div class="shell">

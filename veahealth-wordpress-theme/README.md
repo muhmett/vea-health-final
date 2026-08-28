@@ -111,7 +111,7 @@ is required for the site to work.
 
 | Effect | Where |
 |---|---|
-| Scroll-scrubbed hero film | Homepage. The clip does not autoplay — its playback position is your scroll position, and the thin rail at the bottom of the hero is how far through it you are |
+| Scroll-scrubbed hero film | Homepage. A golden-hour push over the Bosphorus that does not autoplay — its playback position is your scroll position, and the thin rail at the bottom of the hero is how far through it you are |
 | Line-by-line headline reveal | Every `h1`/`h2` marked `data-lines`, split on measured line breaks so it re-splits correctly when the text rewraps |
 | Custom cursor | A ring that lags a dot and takes a label from whatever it is over. Mouse and wide screens only |
 | Fullscreen menu | Wipes open, the eight links rise in sequence, and the panel on the right previews the section you are pointing at |
@@ -156,15 +156,37 @@ otherwise the browser decodes forward from the last keyframe on each scroll tick
 and the film stutters:
 
 ```
-ffmpeg -i source.mp4 -an -vf "scale=1440:-2,fps=24" \
-       -c:v libx264 -crf 26 -g 1 -bf 0 -pix_fmt yuv420p hero-scrub-1440.mp4
+ffmpeg -i source.mp4 -an -vf "scale=1280:-2,fps=20" \
+       -c:v libx264 -crf 35 -g 1 -bf 0 -pix_fmt yuv420p \
+       -movflags +faststart hero-scrub-1280.mp4
 ```
 
-Four encodes ship: H.264 and VP9, at 1440 px and 900 px. `motion.js` picks
-exactly one — by what the browser can decode and how wide the screen is — and
-assigns it. There are deliberately **no `<source>` children** on the element:
-with them the browser starts fetching before the choice is made and the clip
-arrives twice, which on the homepage meant 2.8 MB instead of 907 KB.
+`-g 1 -bf 0` is the important part: one keyframe group, no B-frames. It also
+means the file is close to a stack of stills, so **frame rate and duration cost
+you linearly** — 20 fps over five seconds is 101 frames, and that is what keeps
+the file under a megabyte. Keep the camera moving in one direction for the whole
+clip; a scrub over footage that barely changes gives the visitor nothing back.
+
+Three encodes ship: H.264 at 1280 px and 900 px, plus one VP9 file for the rare
+browser build without proprietary codecs. VP9 is three times the size at
+all-keyframe, so that fallback is the narrow encode whatever the screen.
+`motion.js` picks exactly one and assigns it. There are deliberately **no
+`<source>` children** on the element: with them the browser starts fetching
+before the choice is made and the clip arrives twice — on the homepage that
+meant 2.8 MB instead of 960 KB.
+
+**The frames are painted into a `<canvas>`, not shown by the `<video>`.** A
+paused, never-played, seek-only video is not something every browser composites:
+the element can hold a perfectly good decoded frame — readable with `drawImage`
+— and still paint as a black box. iOS Safari is the known case; it also showed
+up in testing here. Copying each frame out with `drawImage` removes the question
+entirely. The `<video>` stays in the page as a decoder and never becomes visible.
+
+The still `<img>` underneath is the first frame of the film, and it is the
+element search engines index and the one shown when the motion layer does not
+run — so if you replace the film, replace
+`assets/img/art/hero-istanbul-bosphorus-1600.webp` with its first frame too, or
+the crossfade will jump.
 
 Your host must answer HTTP `Range` requests for scrubbing to work. Apache and
 LiteSpeed do; Hostinger is fine.
