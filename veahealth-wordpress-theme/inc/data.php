@@ -1,0 +1,126 @@
+<?php
+/**
+ * Patient results, clinic photography and the journey steps.
+ *
+ * Every photograph referenced here was supplied by the clinic. The before
+ * and after images are real patients, not stock and not generated.
+ *
+ * @package VeaHealth
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/** Before and after cases shown with the drag-to-compare slider. */
+function veahealth_results() {
+	return array(
+		array(
+			'img' => 'full-arch-implants-zirconium-crowns-male-patient-55',
+			'alt' => 'Before and after full-arch implant treatment with zirconium crowns, male patient aged 55',
+			'title' => 'Full-arch implants + zirconium crowns',
+			'meta' => 'Male, 55 · United Kingdom',
+			'detail' => '6 implants, 24 zirconium crowns',
+		),
+		array(
+			'img' => 'hollywood-smile-zirconium-crowns-female-patient',
+			'alt' => 'Before and after smile transformation with zirconium crowns, female patient',
+			'title' => 'Hollywood smile with zirconium crowns',
+			'meta' => 'Female · International patient',
+			'detail' => 'Upper and lower arch',
+		),
+		array(
+			'img' => 'full-mouth-restoration-male-patient',
+			'alt' => 'Before and after full mouth restoration, male patient',
+			'title' => 'Full mouth restoration',
+			'meta' => 'Male · International patient',
+			'detail' => 'Implants and fixed prosthesis',
+		),
+		array(
+			'img' => 'smile-makeover-veneers-female-patient',
+			'alt' => 'Before and after smile makeover with veneers, female patient',
+			'title' => 'Smile makeover with veneers',
+			'meta' => 'Female · International patient',
+			'detail' => 'E-max veneers, upper arch',
+		),
+		array(
+			'img' => 'smile-design-crowns-female-patient',
+			'alt' => 'Before and after digital smile design with ceramic crowns, female patient',
+			'title' => 'Digital smile design with crowns',
+			'meta' => 'Female · International patient',
+			'detail' => 'Full smile line correction',
+		),
+		array(
+			'img' => 'orthodontic-smile-correction-young-female-patient',
+			'alt' => 'Before and after smile correction, young female patient',
+			'title' => 'Smile correction',
+			'meta' => 'Female · International patient',
+			'detail' => 'Alignment and shade correction',
+		),
+	);
+}
+
+/** Photographs of the partner clinic. */
+function veahealth_clinic_images() {
+	return array(
+		array( 'img' => 'vea-health-clinic-lounge-istanbul', 'alt' => 'VeaHealth partner clinic lounge in Istanbul with designer lighting' ),
+		array( 'img' => 'vea-health-treatment-room-istanbul', 'alt' => 'Treatment room at a VeaHealth partner clinic in Istanbul' ),
+		array( 'img' => 'vea-health-reception-istanbul', 'alt' => 'Reception area of a VeaHealth partner clinic in Istanbul' ),
+		array( 'img' => 'vea-health-waiting-area-istanbul', 'alt' => 'Patient waiting area at a VeaHealth partner clinic in Istanbul' ),
+		array( 'img' => 'hybrid-prosthesis-zirconium-detail', 'alt' => 'Close-up of a zirconium hybrid prosthesis produced for a VeaHealth patient' ),
+	);
+}
+
+/** The four stages of the patient journey. */
+function veahealth_journey() {
+	return array(
+		array(
+			'title' => 'Remote assessment',
+			'meta'  => 'Before you travel',
+			'text'  => 'You send photographs and any recent X-rays through the enquiry form or WhatsApp. A partner dentist reviews them and returns a written treatment plan with a fixed, itemised price — before you commit to anything.',
+			'img'   => 'journey-travel-flatlay',
+			'alt'   => 'Passport, boarding pass and sunglasses laid out on linen before a medical trip',
+			'list'  => array(
+				'Photo and X-ray review by a partner dentist',
+				'Written plan with a fixed, itemised quote',
+				'Video call with your coordinator if you want one',
+			),
+		),
+		array(
+			'title' => 'Arrival and transfer',
+			'meta'  => 'Day one',
+			'text'  => 'You are met at Istanbul Airport and driven to your hotel. Your coordinator handles the schedule, the clinic appointments and translation for the whole stay.',
+			'img'   => 'journey-vip-transfer-istanbul',
+			'alt'   => 'Black executive sedan waiting at the arrivals terminal of Istanbul Airport at night',
+			'list'  => array(
+				'Private airport pickup on arrival',
+				'Hotel booked and coordinated with your treatment dates',
+				'English-speaking coordinator with you at every appointment',
+			),
+		),
+		array(
+			'title' => 'Accommodation',
+			'meta'  => 'Throughout your stay',
+			'text'  => 'Partner hotels are chosen for proximity to the clinic and for rest — recovery is part of the treatment, not an afterthought.',
+			'img'   => 'journey-hotel-bosphorus-suite',
+			'alt'   => 'Hotel suite in Istanbul with a window overlooking the Bosphorus in morning light',
+			'list'  => array(
+				'Hotel within short reach of the clinic',
+				'Transfers between hotel and clinic every treatment day',
+				'Quiet rooms suited to post-operative rest',
+			),
+		),
+		array(
+			'title' => 'Treatment and planning',
+			'meta'  => 'At the clinic',
+			'text'  => 'Digital scans, smile design and the treatment itself, carried out by the partner clinical team. You see the plan on screen and approve it before work begins.',
+			'img'   => 'dsd-consultation-room',
+			'alt'   => 'Consultation room with a wall screen showing a three-dimensional dental scan',
+			'list'  => array(
+				'Intraoral scanning and digital smile design',
+				'Plan reviewed and approved with you before treatment',
+				'Shade matched under natural light',
+			),
+		),
+	);
+}
