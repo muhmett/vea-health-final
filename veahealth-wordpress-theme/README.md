@@ -97,6 +97,50 @@ ordinary content, so what the theme renders and what you edit in the admin are
 the same thing. Rewrite a paragraph and your words are what appears — nothing
 reads the source data back to overrule you.
 
+### The treatment room
+
+Every treatment page has a second way in: **Enter the treatment** opens a lit
+space with that treatment's own object suspended in it and notes pinned in the
+air around it. Move the pointer and the light, the object and the notes all
+shift by different amounts, which is what makes a still image read as depth.
+Open a note and it tells you something real — the material and its numbers, the
+step where the actual intervention happens, what it costs and against what, the
+published figure and its source, what the first days afterwards are like.
+
+All 21 treatments have one.
+
+**The notes are not written separately.** They are read out of the same
+structured data the page is built from, so a room can never drift out of step
+with the page it belongs to, and editing a procedure step in the admin changes
+what the room says about it.
+
+Three decisions worth knowing, because they are what make this appropriate for
+a medical site rather than a fashion campaign:
+
+- **It is a layer, not a route.** The page underneath keeps its URL, its 1,500
+  words and its structured data. Google sees the page; the room is something a
+  visitor opens on purpose. An immersive experience that *replaced* the page
+  would cost exactly the rankings the page exists to win.
+- **It is clearly a diagram, not a photograph.** The space is drawn — a lit
+  volume with the treatment's own render floating in it — and every room says so
+  on screen. It never implies it is a photograph of the partner clinic, because
+  somebody who flies to Istanbul on the strength of a room that does not exist
+  has been misled.
+- **There is no game.** No counter, no "three left to find", no reward for
+  completing it. Sites that do that are selling something you can put back;
+  somebody deciding whether to have their jaw operated on abroad is not playing.
+  Every note is information and you can leave at any point.
+
+**Weight and fallbacks.** `room.js` is 15 KB and draws four full-screen quads —
+a volume, a light, the object, a grain pass — with no library at all. It also
+watches its own frame rate and drops the render resolution rather than the frame
+rate when it cannot keep up, because a room at 30 fps feels broken and one at
+0.75 device pixels does not. If WebGL is unavailable the room still opens and
+still reads, as a dark panel rather than a lit one. Under reduced motion the same
+markup lays out as a plain scrollable list of notes with nothing animating. With
+JavaScript off the room cannot open at all, so the button that opens it is not
+shown — the treatment page is the no-script experience, and it is complete.
+
 ### Content that was written, not salvaged
 
 Five hair pages arrived with almost nothing — a recovery table with the wrong
@@ -291,6 +335,9 @@ Tested on WordPress 7.1 with PHP 8.4 before shipping:
 - One hover canvas at most across a 21-card archive: no context thrashing
 - All 21 treatment pages: one `h1` each, every image with alt text, no old
   markup left, no JavaScript errors, 1,141–1,730 words each
+- The room: 0 axe violations with it open and every note expanded, 3 treatments
+  × light and dark; opens and reads with WebGL unavailable; hidden entirely
+  when JavaScript is off
 
 ---
 

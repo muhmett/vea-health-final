@@ -632,3 +632,6 @@ body:has(.tp-bar.is-up) .wa-float { opacity: 0; pointer-events: none; }
   border-left: 3px solid var(--warn);
   color: var(--ink);
 }
+
+/* the way into the room, under the hero buttons */
+.tp-hero__room { margin-top: 26px; }

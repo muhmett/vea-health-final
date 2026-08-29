@@ -70,6 +70,17 @@ while ( have_posts() ) :
 						</a>
 					<?php endif; ?>
 				</div>
+
+				<?php
+				/*
+				 * The way into the room. It sits under the buttons rather than
+				 * among them: it is an invitation, not the thing we want a
+				 * visitor who came here to get a price to click first.
+				 */
+				?>
+				<div class="tp-hero__room" data-anim="up" style="--d:460ms">
+					<?php veahealth_room_button( get_the_ID() ); ?>
+				</div>
 			</div>
 
 			<?php if ( $price || ! empty( $p['stats'] ) ) : ?>
@@ -151,6 +162,8 @@ while ( have_posts() ) :
 	</div>
 
 	<?php veahealth_related_treatments( get_the_ID() ); ?>
+
+	<?php veahealth_room( get_the_ID() ); ?>
 
 	<!-- The enquiry bar: appears once the hero has gone, on every screen size. -->
 	<div class="tp-bar" data-tp-bar hidden>

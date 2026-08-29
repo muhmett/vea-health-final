@@ -1,0 +1,339 @@
+/* ==========================================================================
+   VeaHealth — the treatment room
+
+   A layer that opens over a treatment page. Everything here is inert until
+   the room is opened, and the room is only opened on purpose.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. The button that opens it
+   -------------------------------------------------------------------------- */
+/*
+ * The room can only be opened by script, so the control that opens it does not
+ * exist without script. A button that does nothing when pressed is worse than
+ * no button.
+ */
+.room-open { display: none; }
+.js .room-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 26px 10px 10px;
+  border-radius: 100px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-1);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .3s var(--ease), transform .3s var(--ease-out), box-shadow .3s var(--ease);
+}
+.room-open:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: var(--sh-2, var(--sh-1)); }
+
+.room-open__ring {
+  width: 46px; height: 46px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--deep);
+  position: relative;
+}
+/* a slow pulse, so the control reads as a way in rather than a label */
+.room-open__ring::before,
+.room-open__ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--teal);
+  animation: room-pulse 3.4s var(--ease-out) infinite;
+}
+.room-open__ring::after { animation-delay: 1.7s; }
+.room-open__ring > * { display: none; }
+@keyframes room-pulse {
+  0%   { transform: scale(1);    opacity: .7; }
+  70%  { transform: scale(1.55); opacity: 0; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+.room-open__k {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+.room-open__v { display: block; font-weight: 500; color: var(--ink); margin-top: 2px; }
+
+/* --------------------------------------------------------------------------
+   2. The room
+   -------------------------------------------------------------------------- */
+body.room-is-open { overflow: hidden; }
+
+.room {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: var(--deep);
+  color: #fff;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity .55s var(--ease);
+}
+.room.is-open { opacity: 1; }
+.room[hidden] { display: none; }
+
+.room__stage { position: absolute; inset: 0; }
+.room__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/*
+ * The object is a plain <img> until WebGL replaces it. It is not hidden when
+ * the canvas arrives — the canvas simply covers it — so a failed context
+ * leaves a lit object on a dark ground rather than an empty rectangle.
+ */
+.room__object {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: min(62vmin, 620px);
+  transform: translate(-50%, -50%) scale(.96);
+  opacity: .82;
+  filter: brightness(.9) contrast(1.05);
+  transition: transform 1.4s var(--ease-out), opacity 1.4s var(--ease);
+}
+.room.is-open .room__object { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   3. Titles
+   -------------------------------------------------------------------------- */
+.room__head {
+  position: absolute;
+  top: clamp(22px, 4vh, 46px);
+  left: var(--gutter);
+  right: var(--gutter);
+  pointer-events: none;
+  max-width: 30ch;
+}
+.room__kicker {
+  font-family: var(--f-mono);
+  font-size: .62rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+}
+.room__title {
+  font-family: var(--f-display);
+  font-size: clamp(1.7rem, 3.6vw, 2.6rem);
+  line-height: 1.06;
+  margin-top: 8px;
+  color: #fff;
+}
+.room__hint {
+  margin-top: 14px;
+  font-size: .82rem;
+  color: rgba(233,246,245,.62);
+  transition: opacity .6s var(--ease);
+}
+.room__hint.is-gone { opacity: 0; }
+
+/* --------------------------------------------------------------------------
+   4. Notes
+   -------------------------------------------------------------------------- */
+.room__notes { position: absolute; inset: 0; list-style: none; }
+
+.room-note {
+  position: absolute;
+  left: calc(var(--x) * 100%);
+  top: calc(var(--y) * 100%);
+  transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px)));
+  transition: transform .5s var(--ease-out);
+}
+
+.room-note__pin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px 7px 7px;
+  border-radius: 100px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.20);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .3s var(--ease), border-color .3s var(--ease), transform .3s var(--ease-out);
+}
+.room-note__pin:hover { background: rgba(255,255,255,.15); border-color: var(--teal-bright); transform: scale(1.04); }
+
+.room-note__blob {
+  position: absolute;
+  left: 7px; top: 50%;
+  width: 30px; height: 30px;
+  margin-top: -15px;
+  border-radius: 50%;
+  border: 1px solid var(--teal-bright);
+  animation: room-pulse 3s var(--ease-out) infinite;
+  pointer-events: none;
+}
+.room-note.is-read .room-note__blob { animation: none; opacity: .25; }
+
+.room-note__icon {
+  width: 30px; height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--teal-solid);
+  color: #fff;
+}
+.room-note__icon svg { width: 15px; height: 15px; }
+.room-note__label {
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: rgba(233,246,245,.9);
+}
+
+/* the card */
+.room-note__card {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  width: min(360px, 78vw);
+  padding: 22px 24px;
+  border-radius: var(--r-lg);
+  background: rgba(10,26,29,.92);
+  border: 1px solid rgba(255,255,255,.16);
+  backdrop-filter: blur(20px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) scale(.97);
+  transform-origin: 20% 0;
+  transition: opacity .35s var(--ease), transform .45s var(--ease-out), visibility .35s;
+}
+.room-note.is-open .room-note__card { opacity: 1; visibility: visible; transform: none; }
+.room-note.is-open { z-index: 4; }
+
+/* a note near an edge opens back towards the middle */
+.room-note[style*="--x:0.7"] .room-note__card,
+.room-note[style*="--x:0.8"] .room-note__card { left: auto; right: 0; transform-origin: 80% 0; }
+.room-note[style*="--y:0.8"] .room-note__card { top: auto; bottom: calc(100% + 12px); transform-origin: 20% 100%; }
+
+.room-note__kicker {
+  font-family: var(--f-mono);
+  font-size: .58rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+}
+.room-note__card h3 { font-size: 1.14rem; color: #fff; margin-top: 7px; }
+.room-note__card p { font-size: .9rem; color: rgba(233,246,245,.80); margin-top: 10px; }
+.room-note__card .checklist { margin-top: 14px; }
+.room-note__card .checklist li { color: rgba(233,246,245,.80); font-size: .86rem; }
+.room-note__card .checklist svg { color: var(--teal-bright); }
+
+.room-note__facts { margin-top: 14px; }
+.room-note__facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+.room-note__facts > div:first-child { border-top: 0; }
+.room-note__facts dt { font-size: .82rem; color: rgba(233,246,245,.58); }
+.room-note__facts dd { font-size: .86rem; color: #fff; text-align: right; font-weight: 500; }
+
+.room-note__source {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.10);
+  font-size: .74rem !important;
+  color: rgba(233,246,245,.52) !important;
+}
+.room-note__close {
+  margin-top: 16px;
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  cursor: pointer;
+}
+.room-note__card:focus-visible { outline: 2px solid var(--teal-bright); outline-offset: 3px; }
+
+/* --------------------------------------------------------------------------
+   5. The way out
+   -------------------------------------------------------------------------- */
+.room__bar {
+  position: absolute;
+  bottom: clamp(18px, 3vh, 34px);
+  left: var(--gutter);
+  right: var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.room__exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--f-mono);
+  font-size: .64rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(233,246,245,.78);
+  cursor: pointer;
+  padding: 10px 0;
+}
+.room__exit:hover { color: #fff; }
+
+.room__disclaimer {
+  position: absolute;
+  bottom: clamp(18px, 3vh, 34px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 44ch;
+  text-align: center;
+  font-size: .68rem;
+  line-height: 1.5;
+  color: rgba(233,246,245,.40);
+  pointer-events: none;
+}
+@media (max-width: 900px) {
+  .room__disclaimer { position: static; transform: none; margin: 0 auto; }
+  .room__bar { flex-direction: column-reverse; align-items: stretch; bottom: 12px; }
+  .room__bar .btn { justify-content: center; }
+  .room__head { max-width: none; }
+  .room-note__label { display: none; }
+  .room-note__pin { padding: 7px; }
+}
+
+/* --------------------------------------------------------------------------
+   6. Reduced motion — the room becomes a plain readable panel
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .room, .room__object, .room-note, .room-note__card { transition: none; }
+  .room-open__ring::before, .room-open__ring::after, .room-note__blob { animation: none; }
+  .room__notes {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    padding: clamp(140px, 22vh, 220px) var(--gutter) 140px;
+    overflow-y: auto;
+    max-height: 100%;
+  }
+  .room-note { position: static; transform: none; }
+  .room-note__card {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    width: auto;
+    margin-top: 12px;
+  }
+  .room-note__close { display: none; }
+  .room__object { opacity: .22; }
+}

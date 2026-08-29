@@ -28,6 +28,12 @@ function veahealth_assets() {
 	if ( is_singular( 'service' ) ) {
 		wp_enqueue_style( 'veahealth-treatment', VEAHEALTH_URI . '/assets/css/treatment.css', array( 'veahealth' ), $ver );
 		wp_enqueue_script( 'veahealth-treatment', VEAHEALTH_URI . '/assets/js/treatment.js', array(), $ver, true );
+
+		// The room. Only where the treatment has enough behind it to fill one.
+		if ( veahealth_has_room( get_queried_object_id() ) ) {
+			wp_enqueue_style( 'veahealth-room', VEAHEALTH_URI . '/assets/css/room.css', array( 'veahealth-treatment' ), $ver );
+			wp_enqueue_script( 'veahealth-room', VEAHEALTH_URI . '/assets/js/room.js', array(), $ver, true );
+		}
 	}
 
 	// The motion layer's own stylesheet. Small, and harmless when motion.js
