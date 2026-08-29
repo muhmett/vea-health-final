@@ -1,0 +1,634 @@
+/* ==========================================================================
+   VeaHealth — the treatment page
+
+   Replaces sixteen page-specific stylesheets, one per treatment, that arrived
+   with the pages when they were pasted into the old site. Every treatment now
+   draws from the same components and the same tokens as the rest of the theme.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Hero
+   -------------------------------------------------------------------------- */
+.tp-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--deep);
+  color: var(--deep-ink);
+  padding-block: clamp(28px, 6vh, 56px) clamp(56px, 9vw, 104px);
+}
+.tp-hero__media { position: absolute; inset: 0; z-index: -2; }
+.tp-hero__media img { width: 100%; height: 100%; object-fit: cover; }
+.tp-hero__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(6,20,22,.94) 0%, rgba(6,20,22,.86) 34%, rgba(6,20,22,.56) 62%, rgba(6,20,22,.30) 100%),
+    linear-gradient(180deg, rgba(6,20,22,.55) 0%, rgba(6,20,22,.30) 40%, rgba(6,20,22,.72) 100%);
+}
+
+.tp-hero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, .65fr);
+  gap: clamp(28px, 5vw, 64px);
+  align-items: end;
+}
+.tp-hero__copy .crumbs { margin-bottom: 22px; }
+.tp-hero__copy .crumbs a,
+.tp-hero__copy .crumbs span { color: var(--deep-ink-3); }
+.tp-hero__copy .crumbs a:hover { color: var(--teal-bright); }
+.tp-hero .eyebrow { color: var(--teal-bright); }
+.tp-hero h1 {
+  color: #fff;
+  font-size: var(--step-5);
+  line-height: 1.04;
+  margin-top: 10px;
+  max-width: 18ch;
+}
+.tp-hero .lede { color: rgba(233,246,245,.92); max-width: 58ch; margin-top: 20px; }
+
+.tp-hero__trust {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px 24px;
+  margin-top: 26px;
+  list-style: none;
+}
+.tp-hero__trust li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: .92rem;
+  color: var(--deep-ink-2);
+}
+.tp-hero__trust svg { width: 15px; height: 15px; flex: none; margin-top: 3px; color: var(--teal-bright); }
+
+.tp-hero__actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+.tp-hero__actions .btn--ghost { color: #fff; border-color: rgba(255,255,255,.36); }
+
+/* the price card */
+.tp-hero__card {
+  background: rgba(255,255,255,.07);
+  border: 1px solid var(--deep-line);
+  border-radius: var(--r-lg);
+  padding: clamp(22px, 2.4vw, 30px);
+  backdrop-filter: blur(14px);
+}
+.tp-hero__card-k {
+  font-family: var(--f-mono);
+  font-size: .64rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--deep-ink-3);
+}
+.tp-hero__card-v {
+  font-family: var(--f-display);
+  font-size: clamp(2.4rem, 4.6vw, 3.2rem);
+  line-height: 1;
+  color: #fff;
+  margin-top: 6px;
+}
+.tp-hero__card-note { font-size: .88rem; color: var(--deep-ink-2); margin-top: 10px; }
+.tp-hero__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--deep-line);
+}
+.tp-hero__stats dt {
+  font-family: var(--f-mono);
+  font-size: .58rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--deep-ink-3);
+  order: 2;
+  margin-top: 4px;
+}
+.tp-hero__stats dd { font-family: var(--f-display); font-size: 1.5rem; color: var(--teal-bright); }
+.tp-hero__stats > div { display: flex; flex-direction: column; }
+.tp-hero__card-fine {
+  font-size: .76rem;
+  color: var(--deep-ink-3);
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--deep-line);
+}
+
+@media (max-width: 960px) {
+  .tp-hero__inner { grid-template-columns: 1fr; }
+  .tp-hero h1 { max-width: none; }
+  .tp-hero__media::after {
+    background: linear-gradient(180deg, rgba(6,20,22,.78) 0%, rgba(6,20,22,.62) 40%, rgba(6,20,22,.88) 100%);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. Key facts
+   -------------------------------------------------------------------------- */
+.tp-facts { background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.tp-facts .shell { padding-block: clamp(26px, 3.4vw, 40px); }
+.tp-facts__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 22px clamp(18px, 3vw, 44px);
+}
+.tp-fact dt {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.tp-fact__i {
+  width: 32px; height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--teal);
+}
+.tp-fact__i svg { width: 16px; height: 16px; }
+/* the value sits under the label, indented past the icon so the pair reads as one */
+.tp-fact dd {
+  font-family: var(--f-display);
+  font-size: 1.3rem;
+  color: var(--ink);
+  margin-top: 4px;
+  padding-left: 43px;
+}
+
+.tp-facts__long {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px clamp(24px, 4vw, 56px);
+  margin-top: 28px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+.tp-facts__long h2 {
+  font-family: var(--f-mono);
+  font-size: .64rem;
+  font-weight: 400;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.tp-facts__long p { color: var(--ink-2); font-size: .95rem; }
+.tp-facts__meta { margin-top: 22px; font-size: .8rem; color: var(--ink-3); }
+
+/* --------------------------------------------------------------------------
+   3. Body layout — rail beside the content
+   -------------------------------------------------------------------------- */
+.tp-body {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 80px);
+  align-items: start;
+  padding-block: clamp(48px, 7vw, 88px);
+}
+.tp-main { min-width: 0; }
+
+/*
+ * The rail is a grid item in a container that aligns to the start, so without
+ * this it is only as tall as its own contents and the sticky child inside it
+ * has nowhere to travel — it scrolls away with the first section.
+ */
+.tp-rail { align-self: stretch; }
+.tp-rail__inner { position: sticky; top: calc(var(--header-h, 78px) + 22px); }
+.tp-rail__k {
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 14px;
+}
+.tp-rail__list { list-style: none; border-left: 1px solid var(--line); }
+.tp-rail__list a {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 0 9px 16px;
+  margin-left: -1px;
+  border-left: 2px solid transparent;
+  font-size: .88rem;
+  color: var(--ink-3);
+  text-decoration: none;
+  transition: color .25s var(--ease), border-color .25s var(--ease);
+}
+.tp-rail__dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--line);
+  flex: none;
+  transition: background .25s var(--ease), transform .25s var(--ease-out);
+}
+.tp-rail__list a:hover { color: var(--ink); }
+.tp-rail__list a.is-current {
+  color: var(--ink);
+  border-left-color: var(--teal);
+  font-weight: 500;
+}
+.tp-rail__list a.is-current .tp-rail__dot { background: var(--teal); transform: scale(1.7); }
+.tp-rail__cta { margin-top: 22px; width: 100%; justify-content: center; }
+
+@media (max-width: 1080px) {
+  .tp-body { grid-template-columns: 1fr; }
+  .tp-rail { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   4. Sections
+   -------------------------------------------------------------------------- */
+.tp-section { padding-block: clamp(38px, 5vw, 62px); scroll-margin-top: calc(var(--header-h, 78px) + 20px); }
+.tp-section + .tp-section { border-top: 1px solid var(--line-soft); }
+.tp-section--tint {
+  background: var(--surface-2);
+  border-radius: var(--r-lg);
+  padding-inline: clamp(20px, 3vw, 38px);
+  border-top: 0 !important;
+  margin-block: clamp(14px, 2vw, 26px);
+}
+.tp-head { max-width: 62ch; margin-bottom: clamp(26px, 3vw, 38px); }
+.tp-head h2 { font-size: var(--step-3); line-height: 1.1; margin-top: 8px; }
+.tp-head .lede { margin-top: 14px; font-size: 1rem; }
+
+/* the anchor beside a heading: present for everyone, quiet until wanted */
+.tp-anchor {
+  margin-left: .35em;
+  color: var(--teal);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity .2s var(--ease);
+}
+.tp-head h2:hover .tp-anchor,
+.tp-anchor:focus-visible { opacity: .65; }
+
+/* --------------------------------------------------------------------------
+   5. Benefits
+   -------------------------------------------------------------------------- */
+.tp-why {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.tp-why-card {
+  background: var(--surface);
+  padding: clamp(22px, 2.4vw, 30px);
+  transition: background .3s var(--ease);
+}
+.tp-why-card:hover { background: var(--surface-2); }
+.tp-why-n {
+  font-family: var(--f-mono);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  color: var(--teal);
+  margin-bottom: 12px;
+}
+.tp-why-card h3 { font-size: 1.06rem; }
+.tp-why-card p { color: var(--ink-2); font-size: .93rem; margin-top: 8px; }
+
+/* --------------------------------------------------------------------------
+   6. Comparison — a table on a desk, cards in a hand
+   -------------------------------------------------------------------------- */
+.tp-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-lg); }
+.tp-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.tp-table th,
+.tp-table td { padding: 13px 16px; text-align: left; border-bottom: 1px solid var(--line-soft); }
+.tp-table thead th {
+  background: var(--surface-2);
+  font-family: var(--f-mono);
+  font-size: .64rem;
+  font-weight: 400;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.tp-table tbody th { font-weight: 500; color: var(--ink); }
+.tp-table td { color: var(--ink-2); }
+.tp-table tbody tr:last-child th,
+.tp-table tbody tr:last-child td { border-bottom: 0; }
+/* our column, called out rather than left for the reader to find */
+.tp-table .is-ours { background: var(--teal-faint); color: var(--ink); font-weight: 500; }
+.tp-table thead .is-ours { background: var(--teal-solid); color: #fff; }
+.tp-table .is-good { color: var(--ok); }
+.tp-table .is-bad { color: var(--danger); }
+
+.tp-table-cards { display: none; list-style: none; }
+.tp-table-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 16px 18px;
+}
+.tp-table-card + .tp-table-card { margin-top: 10px; }
+.tp-table-card__k {
+  font-family: var(--f-mono);
+  font-size: .62rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+.tp-table-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.tp-table-card dl > div:first-child { border-top: 0; }
+.tp-table-card dt { font-size: .84rem; color: var(--ink-3); }
+.tp-table-card dd { font-size: .88rem; color: var(--ink); text-align: right; }
+.tp-table-card .is-ours {
+  background: var(--teal-faint);
+  margin-inline: -10px;
+  padding-inline: 10px;
+  border-radius: var(--r-sm);
+}
+.tp-table-card .is-ours dd { font-weight: 600; color: var(--teal); }
+
+@media (max-width: 720px) {
+  .tp-table-wrap { display: none; }
+  .tp-table-cards { display: block; }
+}
+
+/* --------------------------------------------------------------------------
+   7. Procedure — a spine that fills as it is read
+   -------------------------------------------------------------------------- */
+.tp-steps { position: relative; list-style: none; padding-left: 0; }
+.tp-steps__spine {
+  position: absolute;
+  left: 19px;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: var(--line);
+}
+.tp-steps__spine i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--teal);
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+}
+.tp-step { position: relative; display: flex; gap: 20px; padding-block: 16px; }
+.tp-step__n {
+  position: relative;
+  z-index: 1;
+  width: 39px; height: 39px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: .74rem;
+  color: var(--ink-3);
+  transition: background .35s var(--ease), color .35s var(--ease), border-color .35s var(--ease);
+}
+.tp-step.is-reached .tp-step__n { background: var(--teal-solid); border-color: var(--teal-solid); color: #fff; }
+.tp-step__body { padding-top: 4px; min-width: 0; }
+.tp-step__tag {
+  font-family: var(--f-mono);
+  font-size: .62rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 5px;
+}
+.tp-step__body h3 { font-size: 1.14rem; }
+.tp-step__body > p { color: var(--ink-2); margin-top: 8px; }
+.tp-step .checklist { margin-top: 12px; }
+
+/* --------------------------------------------------------------------------
+   8. Cost — drawn to scale
+   -------------------------------------------------------------------------- */
+.tp-cost { border: 1px solid var(--line); border-radius: var(--r-lg); padding: clamp(18px, 2.4vw, 28px); }
+.tp-cost-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 190px) minmax(0, 1fr) minmax(72px, auto);
+  gap: 16px;
+  align-items: center;
+  padding-block: 11px;
+}
+.tp-cost-where { font-size: .92rem; color: var(--ink-2); display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.tp-cost-row.is-ours .tp-cost-where { color: var(--ink); font-weight: 600; }
+.tp-badge {
+  font-family: var(--f-mono);
+  font-size: .55rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--teal-solid);
+  padding: 3px 7px;
+  border-radius: 100px;
+}
+.tp-cost-bar { height: 9px; border-radius: 100px; background: var(--surface-2); overflow: hidden; }
+.tp-cost-bar span {
+  display: block;
+  height: 100%;
+  width: var(--w, 0%);
+  border-radius: inherit;
+  background: var(--ink-3);
+  transform-origin: 0 50%;
+  transition: transform 1.1s var(--ease-out);
+}
+/*
+ * The widths are in the markup, so the comparison is already correct with no
+ * JavaScript at all. Only collapse the bars when scripting is running to draw
+ * them back — otherwise a visitor without JS gets a panel of empty tracks and
+ * no comparison, which is the one thing this section exists to give them.
+ */
+.js .tp-cost .tp-cost-bar span { transform: scaleX(0); }
+.js .tp-cost.is-drawn .tp-cost-bar span { transform: scaleX(1); }
+.tp-cost-row.is-ours .tp-cost-bar span { background: var(--teal); }
+.tp-cost-price { font-family: var(--f-display); font-size: 1.2rem; text-align: right; color: var(--ink); }
+.tp-cost-row.is-ours .tp-cost-price { color: var(--teal); }
+.tp-cost-note { font-size: .82rem; color: var(--ink-3); padding-left: 4px; margin-top: -6px; }
+
+.tp-saving {
+  margin-top: 20px;
+  font-size: 1.02rem;
+  color: var(--ink-2);
+}
+.tp-saving strong { color: var(--teal); font-family: var(--f-display); font-size: 1.5rem; }
+.tp-cost-caveat {
+  margin-top: 16px;
+  font-size: .82rem;
+  color: var(--ink-3);
+  border-left: 2px solid var(--line);
+  padding-left: 14px;
+}
+
+@media (max-width: 640px) {
+  .tp-cost-row { grid-template-columns: 1fr auto; row-gap: 6px; }
+  .tp-cost-bar { grid-column: 1 / -1; order: 3; }
+}
+
+/* --------------------------------------------------------------------------
+   9. Recovery
+   -------------------------------------------------------------------------- */
+.tp-phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr)); gap: 18px; }
+.tp-phase {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: clamp(20px, 2.2vw, 26px);
+  background: var(--surface);
+}
+.tp-phase__n {
+  font-family: var(--f-mono);
+  font-size: .62rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 9px;
+}
+.tp-phase h3 { font-size: 1.04rem; }
+.tp-phase p { color: var(--ink-2); font-size: .92rem; margin-top: 7px; }
+
+/* --------------------------------------------------------------------------
+   10. Evidence
+   -------------------------------------------------------------------------- */
+.tp-evidence { display: grid; grid-template-columns: repeat(auto-fit, minmax(252px, 1fr)); gap: 18px; }
+.tp-ev {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: clamp(20px, 2.2vw, 26px);
+}
+.tp-ev__fig {
+  font-family: var(--f-display);
+  font-size: 2.1rem;
+  line-height: 1;
+  color: var(--teal);
+}
+.tp-ev blockquote { margin: 12px 0 0; }
+.tp-ev blockquote p { color: var(--ink-2); font-size: .92rem; }
+.tp-ev figcaption {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  font-size: .76rem;
+  color: var(--ink-3);
+}
+
+/* --------------------------------------------------------------------------
+   11. FAQ — <details>, so it opens without JavaScript
+   -------------------------------------------------------------------------- */
+.tp-faq { border-top: 1px solid var(--line); }
+.tp-faq-item { border-bottom: 1px solid var(--line); }
+.tp-faq-item summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 0;
+  cursor: pointer;
+  font-size: 1.02rem;
+  font-weight: 500;
+  color: var(--ink);
+  list-style: none;
+}
+.tp-faq-item summary::-webkit-details-marker { display: none; }
+.tp-faq-item summary:hover { color: var(--teal); }
+.tp-faq-item summary svg {
+  width: 18px; height: 18px;
+  flex: none;
+  margin-top: 3px;
+  color: var(--teal);
+}
+.tp-faq-item summary svg .i-v { transition: transform .3s var(--ease-out); transform-origin: 12px 12px; }
+.tp-faq-item[open] summary svg .i-v { transform: rotate(90deg); }
+.tp-faq-a { padding-bottom: 20px; max-width: 68ch; }
+.tp-faq-a p { color: var(--ink-2); }
+
+/* --------------------------------------------------------------------------
+   12. The enquiry bar
+   -------------------------------------------------------------------------- */
+.tp-bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 90;
+  background: var(--deep);
+  color: var(--deep-ink);
+  border-top: 1px solid var(--deep-line);
+  transform: translateY(102%);
+  transition: transform .45s var(--ease-out);
+}
+.tp-bar.is-up { transform: none; }
+.tp-bar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-block: 12px;
+}
+.tp-bar__title { font-weight: 600; font-size: .98rem; }
+.tp-bar__price { font-size: .84rem; color: var(--deep-ink-2); }
+.tp-bar__do { display: flex; gap: 10px; flex: none; }
+.tp-bar__wa { color: #fff; border-color: rgba(255,255,255,.32); }
+.tp-bar__wa svg { width: 16px; height: 16px; }
+
+@media (max-width: 700px) {
+  .tp-bar__what { min-width: 0; }
+  .tp-bar__title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tp-bar__wa span,
+  .tp-bar__wa { display: none; }
+}
+/* the floating WhatsApp button would sit on top of the bar */
+.tp-bar.is-up ~ .wa-float,
+body:has(.tp-bar.is-up) .wa-float { opacity: 0; pointer-events: none; }
+
+/* --------------------------------------------------------------------------
+   13. Anything an editor added by hand, after the structured sections
+   -------------------------------------------------------------------------- */
+.tp-extra > * + * { margin-top: 1em; }
+.tp-extra h2 { font-size: var(--step-3); margin-top: 1.4em; }
+.tp-extra h3 { font-size: var(--step-2); margin-top: 1.2em; }
+.tp-extra ul, .tp-extra ol { padding-left: 1.3em; }
+.tp-extra li { margin-top: .4em; color: var(--ink-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .js .tp-cost .tp-cost-bar span { transform: scaleX(1) !important; transition: none; }
+  .tp-steps__spine i { transform: scaleY(1) !important; }
+  .tp-bar { transition: none; }
+}
+
+/* --------------------------------------------------------------------------
+   14. Callouts
+   -------------------------------------------------------------------------- */
+.tp-note {
+  border-radius: var(--r-lg);
+  padding: clamp(18px, 2.2vw, 26px) clamp(20px, 2.4vw, 28px);
+  margin-block: clamp(20px, 3vw, 34px);
+  font-size: .95rem;
+  line-height: 1.62;
+}
+.tp-note--plain {
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border-left: 3px solid var(--line);
+}
+/* the "what this does not do" note: it is the most useful paragraph on the
+   page it appears on, so it is not styled to be skipped */
+.tp-note--warn {
+  background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+  border-left: 3px solid var(--warn);
+  color: var(--ink);
+}

@@ -18,15 +18,16 @@ function veahealth_assets() {
 	wp_enqueue_style( 'veahealth-fonts', VEAHEALTH_URI . '/assets/fonts/fonts.css', array(), $ver );
 	wp_enqueue_style( 'veahealth', VEAHEALTH_URI . '/assets/css/site.css', array( 'veahealth-fonts' ), $ver );
 
-	// Treatment pages carry their own salvaged stylesheet, then the contrast
-	// repairs that have to win over it.
+	/*
+	 * Treatment pages used to load a stylesheet of their own — one per
+	 * treatment, 384 KB across sixteen files, because each page had been
+	 * pasted into the old site as a complete HTML document. They now render
+	 * through the theme's components, so there is one stylesheet for all of
+	 * them and it is 19 KB.
+	 */
 	if ( is_singular( 'service' ) ) {
-		$slug = get_post_field( 'post_name', get_queried_object_id() );
-		$file = '/assets/css/pages/' . $slug . '.css';
-		if ( $slug && file_exists( VEAHEALTH_DIR . $file ) ) {
-			wp_enqueue_style( 'veahealth-service', VEAHEALTH_URI . $file, array( 'veahealth' ), $ver );
-			wp_enqueue_style( 'veahealth-service-contrast', VEAHEALTH_URI . '/assets/css/svc-contrast.css', array( 'veahealth-service' ), $ver );
-		}
+		wp_enqueue_style( 'veahealth-treatment', VEAHEALTH_URI . '/assets/css/treatment.css', array( 'veahealth' ), $ver );
+		wp_enqueue_script( 'veahealth-treatment', VEAHEALTH_URI . '/assets/js/treatment.js', array(), $ver, true );
 	}
 
 	// The motion layer's own stylesheet. Small, and harmless when motion.js

@@ -131,6 +131,42 @@ function veahealth_upsert( $args, $type, $slug, $overwrite ) {
 function veahealth_install_content( $overwrite = false ) {
 	$log = array();
 
+	/*
+	 * Write the content past KSES, the way WordPress's own importer does.
+	 *
+	 * KSES sanitises post content on insert for anyone without the
+	 * unfiltered_html capability, and activation runs with no logged-in user at
+	 * all — so every inline <svg> in the treatment pages was being stripped on
+	 * the way in. Forty-eight icons a page: the tick beside each step of the
+	 * procedure, the marker on each question. This is the theme's own markup,
+	 * not anything a visitor supplied, and it is restored below whatever
+	 * happens.
+	 */
+	$kses_was_on = has_filter( 'content_save_pre', 'wp_filter_post_kses' );
+	if ( $kses_was_on ) {
+		kses_remove_filters();
+	}
+
+	try {
+		$log = veahealth_install_run( $overwrite );
+	} finally {
+		if ( $kses_was_on ) {
+			kses_init_filters();
+		}
+	}
+	return $log;
+}
+
+/**
+ * The installer proper. Called by veahealth_install_content() with the content
+ * sanitiser suspended; call that rather than this.
+ *
+ * @param bool $overwrite Replace pages that already exist.
+ * @return string[] Log lines.
+ */
+function veahealth_install_run( $overwrite = false ) {
+	$log = array();
+
 	/* ---- permalinks: /services/<slug>/ needs pretty permalinks ---- */
 	if ( ! get_option( 'permalink_structure' ) ) {
 		global $wp_rewrite;
@@ -155,10 +191,22 @@ function veahealth_install_content( $overwrite = false ) {
 	/* ---- treatments ---- */
 	$counts = array( 'created' => 0, 'updated' => 0, 'kept' => 0, 'published' => 0 );
 	foreach ( veahealth_content_services() as $s ) {
+		/*
+		 * The body is built from the structured data, not from the HTML the old
+		 * site carried. Those pages were complete standalone documents pasted
+		 * into the editor — that is what produced the duplicate canonicals and
+		 * the 384 KB of page-specific CSS. The words survive; the markup does
+		 * not. If a treatment has no structured entry the original is still
+		 * used, so nothing can end up with an empty page.
+		 */
+		$body = veahealth_service_body_html( $s['slug'] );
+		if ( ! $body ) {
+			$body = $s['content'];
+		}
 		list( $id, $action ) = veahealth_upsert(
 			array(
 				'post_title'   => $s['title'],
-				'post_content' => $s['content'],
+				'post_content' => $body,
 				'post_excerpt' => $s['excerpt'],
 				'menu_order'   => $s['order'],
 			),

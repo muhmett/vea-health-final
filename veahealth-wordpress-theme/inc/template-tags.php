@@ -19,6 +19,11 @@ function veahealth_icon( $name ) {
 		'arrow'   => '<path fill="none" stroke="currentColor" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>',
 		'check'   => '<path fill="none" stroke="currentColor" stroke-width="2.2" d="M20 6L9 17l-5-5"/>',
 		'compare' => '<path fill="none" stroke="currentColor" stroke-width="2" d="M9 6L4 12l5 6M15 6l5 6-5 6"/>',
+		// the FAQ marker: CSS rotates the vertical stroke away when the answer opens
+		'plus'    => '<path fill="none" stroke="currentColor" stroke-width="2" d="M5 12h14"/><path class="i-v" fill="none" stroke="currentColor" stroke-width="2" d="M12 5v14"/>',
+		'clock'   => '<g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></g>',
+		'tag'     => '<g fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12V4h8l9 9-8 8-9-9z"/><circle cx="7.5" cy="7.5" r="1.4"/></g>',
+		'shield'  => '<path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 3l7 3v6c0 4.4-2.9 7.8-7 9-4.1-1.2-7-4.6-7-9V6l7-3z"/>',
 		'fb'      => '<path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v2H8v3h2v7h3v-7h3l1-3h-4v-2c0-.55.45-1 1-1z"/>',
 		'ig'      => '<g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.6"/></g><circle cx="17.2" cy="6.8" r="1"/>',
 		'yt'      => '<path d="M21.6 7.2s-.2-1.4-.8-2c-.75-.8-1.6-.8-2-.85C16 4.1 12 4.1 12 4.1h-.01s-4 0-6.8.25c-.4.05-1.25.05-2 .85-.6.6-.8 2-.8 2S2.2 8.8 2.2 10.5v1.6c0 1.65.2 3.3.2 3.3s.2 1.4.8 2c.75.8 1.75.75 2.2.85 1.6.15 6.8.2 6.8.2s4 0 6.8-.25c.4-.05 1.25-.05 2-.85.6-.6.8-2 .8-2s.2-1.65.2-3.3v-1.6c0-1.65-.2-3.3-.2-3.3zM10 14.6V9.1l5.2 2.75L10 14.6z"/>',

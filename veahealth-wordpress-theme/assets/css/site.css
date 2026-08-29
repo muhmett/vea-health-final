@@ -9,6 +9,10 @@
 :root{
   /* brand */
   --teal:          #1C726D;
+  /* For anything filled teal with white text on it. --teal itself lightens to a
+     mint in dark mode, which is right for text on a dark ground and wrong for a
+     background carrying white text — 1.6:1. This one stays dark in both. */
+  --teal-solid:    #1C726D;
   --teal-bright:   #5BC8C2;
   --teal-mid:      #3AADA7;
   --teal-glow:     rgba(91,200,194,.22);
@@ -78,6 +82,7 @@
     --deep-ink-3:  #7A9EA1;
     --deep-line:   rgba(255,255,255,.12);
     --teal:        #6FD6D0;
+    --teal-solid:  #10635E;
     --teal-bright: #8AE5DF;
     --teal-mid:    #4FC0BA;
     --teal-glow:   rgba(111,214,208,.20);
@@ -111,6 +116,7 @@
     --deep-ink-3:  #7A9EA1;
     --deep-line:   rgba(255,255,255,.12);
   --teal:        #6FD6D0;
+  --teal-solid:  #10635E;
   --teal-bright: #8AE5DF;
   --teal-mid:    #4FC0BA;
   --teal-glow:   rgba(111,214,208,.20);

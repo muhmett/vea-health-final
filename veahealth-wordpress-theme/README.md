@@ -61,6 +61,60 @@ had the *label* typed into the URL field (`http://OxyCure`), so there was never
 a page behind them. **Have your clinical partner read these five before you
 publish**, and replace “price on request” with your real figures.
 
+### Treatment pages, rebuilt
+
+Every treatment page on the old site had been pasted into the editor as a
+complete HTML document — `<head>`, stylesheet and all. That is what was serving
+Google duplicate titles and duplicate canonicals, two of which pointed at
+somebody else's domain, and it is why the pages carried **384 KB of CSS across
+sixteen files**, one per treatment, each styled slightly differently.
+
+The words were worth keeping. The markup was not. All twenty-one treatments were
+read back into structure and are now drawn by the theme's own components, from
+**one 19 KB stylesheet** shared across all of them:
+
+| Section | What it does |
+|---|---|
+| Hero | Headline, lead, four checked claims, and the price card |
+| Key facts | Price, procedure type and the two figures that matter, scannable in three seconds |
+| On this page | A contents rail that sticks beside you and marks the section you are reading — built from the sections that page actually has, not a fixed list |
+| Why this treatment | The clinical case, numbered |
+| How it compares | A real table on a desk; the same rows as cards on a phone, because a wide table in a horizontal scroller hides the comparison rather than showing it |
+| The procedure | A timeline whose spine fills as you read down it |
+| What it costs | Bars drawn to scale with the saving worked out, and a caveat saying the figures are indicative |
+| Recovery | Week by week |
+| The evidence | Published figures, each with its source |
+| Questions | Built on `<details>`, so every answer opens without JavaScript and every answer is in the page for Google to read |
+| Enquiry bar | Rises once the hero has gone; drops again at the closing call to action so it never covers the form it points at |
+
+**Nothing here needs JavaScript.** The cost bars carry their widths in the
+markup and are only collapsed for the animation when scripting is running; the
+questions are `<details>`; the table is a table. With JavaScript off a treatment
+page is still 1,495 words with the comparison intact.
+
+**Editing still works.** The installer writes these sections into the post as
+ordinary content, so what the theme renders and what you edit in the admin are
+the same thing. Rewrite a paragraph and your words are what appears — nothing
+reads the source data back to overrule you.
+
+### Content that was written, not salvaged
+
+Five hair pages arrived with almost nothing — a recovery table with the wrong
+heading over it and a handful of questions, about 550 words each. They now carry
+the same sections as the rest, and six dental pages that had no recovery
+timeline have one.
+
+Two rules held while writing it, and they are worth knowing about because they
+constrain what the pages claim:
+
+- **No invented prices.** Where the clinic has not given a figure the page says
+  the price is quoted after assessment and gives no number.
+- **No invented citations.** The evidence section is absent on pages with no
+  published figures behind them rather than filled with plausible references.
+
+The clinical descriptions are of standard technique and each of those pages says
+so. **Have a partner clinician read them before you go live.**
+
 ### Enquiries — leads that cannot get lost
 
 The old form had no `action`, no backend and no email or phone field. It opened
@@ -235,6 +289,8 @@ Tested on WordPress 7.1 with PHP 8.4 before shipping:
     headline intact
   - **Phone** — the 310 KB video encode, no custom cursor, no WebGL
 - One hover canvas at most across a 21-card archive: no context thrashing
+- All 21 treatment pages: one `h1` each, every image with alt text, no old
+  markup left, no JavaScript errors, 1,141–1,730 words each
 
 ---
 
