@@ -150,7 +150,16 @@
   gap: clamp(28px, 4vw, 56px);
   align-items: start;
 }
-@media (min-width: 1100px){
+/*
+ * 1000px, not 1100. An iPad in landscape is 1024 and was falling through to the
+ * fold when it has ample room for the rail and a finger big enough to use it.
+ *
+ * Deliberately above 980, which is the viewport Chrome reports when somebody
+ * asks a phone for the desktop site: that page is being scaled down onto a
+ * ~390px screen, so a sticky rail there would render about two millimetres
+ * wide. Width alone is not the question — physical size is.
+ */
+@media (min-width: 1000px){
   .post-layout{ grid-template-columns: minmax(0, 1fr) 236px; }
   .post-aside{ align-self: stretch; order: 2; }
   .post-aside__inner{ position: sticky; top: calc(var(--header-h, 78px) + 24px); }
@@ -164,7 +173,7 @@
  */
 .post-toc > summary{ list-style: none; }
 .post-toc > summary::-webkit-details-marker{ display: none; }
-@media (min-width: 1100px){
+@media (min-width: 1000px){
   /* in the rail it reads as a heading; it is still the control that folds it */
   .post-toc > summary{
     font-family: var(--f-mono);
@@ -201,7 +210,7 @@
 .post-toc a.is-current{ color: var(--ink); border-left-color: var(--teal); font-weight: 500; }
 
 /* on a phone it folds away, so it never eats the first screen */
-@media (max-width: 1099px){
+@media (max-width: 999px){
   .post-aside{ margin-bottom: 8px; }
   .post-toc{
     border: 1px solid var(--line);

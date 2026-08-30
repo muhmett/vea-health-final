@@ -21,7 +21,7 @@
   if (!article) return;
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var wide    = window.matchMedia('(min-width: 1100px)');
+  var wide    = window.matchMedia('(min-width: 1000px)');   // matches the rail breakpoint in reading.css
 
   /* --------------------------------------------------------------------------
      Header height, so the sticky rail parks below it and an anchored heading
