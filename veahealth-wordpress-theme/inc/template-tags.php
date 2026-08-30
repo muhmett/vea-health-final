@@ -447,3 +447,67 @@ function veahealth_post_cover( $post_id, $size = '900' ) {
 	}
 	return VEAHEALTH_URI . '/assets/img/art/blog-cover-dental-ceramic-sand-900.webp';
 }
+
+/**
+ * A contents list, built from the headings in the article itself.
+ *
+ * Reading it out of the saved content rather than storing it separately means
+ * it cannot go stale: an editor who renames a heading in the admin renames it
+ * here too, and one who deletes a section removes its entry.
+ *
+ * @param string $content Rendered post content.
+ * @param int    $min     Below this many headings a contents list is noise.
+ * @return string
+ */
+function veahealth_post_toc( $content, $min = 4 ) {
+	if ( ! preg_match_all( '#<h2[^>]*id="([^"]+)"[^>]*>(.*?)</h2>#is', $content, $m, PREG_SET_ORDER ) ) {
+		return '';
+	}
+	if ( count( $m ) < $min ) {
+		return '';
+	}
+
+	$items = '';
+	foreach ( $m as $h ) {
+		$items .= sprintf(
+			'<li><a href="#%s">%s</a></li>',
+			esc_attr( $h[1] ),
+			esc_html( trim( wp_strip_all_tags( $h[2] ) ) )
+		);
+	}
+
+	/*
+	 * A <details> on small screens and a plain nav on large ones. Using the
+	 * element rather than a class means the fold works before any script runs,
+	 * and the stylesheet decides which of the two it looks like.
+	 */
+	/*
+	 * Shipped closed. On a phone an open contents list is the whole first
+	 * screen, which is the opposite of helping somebody read; the script opens
+	 * it where there is a rail to put it in. With no script it stays a fold,
+	 * which still works.
+	 */
+	return sprintf(
+		'<details class="post-toc"><summary>%s</summary><ol>%s</ol></details>',
+		esc_html__( 'In this article', 'veahealth' ),
+		$items
+	);
+}
+
+/** The three lines that give the answer before the article does. */
+function veahealth_post_keys( $post_id ) {
+	$keys = get_post_meta( $post_id, '_vh_keys', true );
+	if ( ! is_array( $keys ) || ! $keys ) {
+		return;
+	}
+	?>
+	<aside class="post-key">
+		<p class="post-key__k"><?php esc_html_e( 'The short answer', 'veahealth' ); ?></p>
+		<ul>
+			<?php foreach ( $keys as $k ) : ?>
+				<li><?php echo esc_html( $k ); ?></li>
+			<?php endforeach; ?>
+		</ul>
+	</aside>
+	<?php
+}

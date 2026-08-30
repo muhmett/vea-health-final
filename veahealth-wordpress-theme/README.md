@@ -184,6 +184,58 @@ for a question with one answer.
 already quote, and no citations — where a claim would need a study behind it,
 the article makes the weaker claim it can support instead.
 
+### Reading
+
+A page of marketing sections and 1,500 words of prose are not the same design
+problem, so articles get their own surface, type scale and behaviour. What
+changed, and the measurements it was changed against:
+
+| | Before | Now |
+|---|---|---|
+| Body size | 16.5px everywhere | 17px phone, 18px desktop |
+| Line measure | ~93 characters | ~70 |
+| Contrast, light | 6.3:1 | 7.8:1 |
+| Contrast, dark | 9.2:1 | 8.7:1 |
+| `h2` on a phone | 28.4px | 22.7px |
+
+Two of those need explaining. The dark contrast went **down** on purpose:
+maximum contrast is not maximum legibility, pure white on black measures 21:1
+and glare bleeds into the letterforms over a long read. Both themes now sit
+around 8-9:1, which is the comfortable band.
+
+And the measure is capped at `54ch`, not the `68ch` the guidance suggests,
+because `ch` is the width of the zero glyph and this face's zero is much
+narrower than its average letter — 68ch measured out at 93 real characters a
+line.
+
+The article also sits on its own reading surface: a warm off-white rather than
+pure white in light mode, a lifted ink rather than the near-black marketing
+ground in dark mode.
+
+**The short answer.** Every article opens with three lines giving the actual
+answer, not a teaser. Somebody who reads only that box should leave knowing what
+they came for — which is also the shape Google lifts for a featured snippet.
+
+**On scroll.** A progress bar that measures the article rather than the page, so
+it reaches 100% when you have read the last line rather than when the footer
+arrives. A contents list that tracks the section you are in — a sticky rail
+beside the text on a wide screen, a fold above it on a phone, closed there so it
+never becomes the whole first screen. And each block lifting slightly as it
+arrives, kept small on purpose: text that animates hard is text you have to wait
+for. Reduced motion keeps the progress bar and the tracking, which are
+wayfinding, and drops the reveal. With no JavaScript the contents is still a
+working `<details>` fold and every word is on the page.
+
+### Cache busting
+
+Assets are versioned by their own modification time, not by the theme constant
+alone. This is here because it cost a live site a day: the journal shipped with
+new rules appended to `site.css`, the constant was not bumped, and every browser
+and the host's page cache went on serving the previous stylesheet at the same
+`?ver=`. The markup updated and the CSS did not, so a production site showed
+unstyled tables and contents lists. The constant still identifies the release;
+the mtime guarantees a changed file is a changed URL.
+
 ### Where the article images came from
 
 Four covers are CC0 photographs from Openverse, credited under each one in the

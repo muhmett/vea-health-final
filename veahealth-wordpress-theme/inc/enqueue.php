@@ -9,14 +9,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * A cache-busting version for one asset.
+ *
+ * The theme version alone is not enough, and this cost a live site a day of
+ * looking broken: the journal shipped with new rules appended to site.css, the
+ * constant was not bumped, and so every browser and the host's page cache went
+ * on serving the previous stylesheet at the same ?ver=. The markup updated, the
+ * CSS did not, and the result was unstyled tables and contents lists on a
+ * production site.
+ *
+ * Deriving the suffix from the file's modification time removes the step a
+ * human has to remember. The constant still identifies the release; the mtime
+ * guarantees that a changed file is a changed URL.
+ *
+ * @param string $rel Path relative to the theme root, with a leading slash.
+ * @return string
+ */
+function veahealth_asset_version( $rel ) {
+	$file = VEAHEALTH_DIR . $rel;
+	$time = file_exists( $file ) ? filemtime( $file ) : 0;
+	return $time ? VEAHEALTH_VERSION . '.' . $time : VEAHEALTH_VERSION;
+}
+
 function veahealth_assets() {
 	$ver = VEAHEALTH_VERSION;
 
 	// Self-hosted webfonts. The Google Fonts CDN receives every visitor's IP
 	// address, which German courts have held to breach the GDPR, and it costs
 	// an extra DNS lookup and TLS handshake before any text can render.
-	wp_enqueue_style( 'veahealth-fonts', VEAHEALTH_URI . '/assets/fonts/fonts.css', array(), $ver );
-	wp_enqueue_style( 'veahealth', VEAHEALTH_URI . '/assets/css/site.css', array( 'veahealth-fonts' ), $ver );
+	wp_enqueue_style( 'veahealth-fonts', VEAHEALTH_URI . '/assets/fonts/fonts.css', array(), veahealth_asset_version( '/assets/fonts/fonts.css' ) );
+	wp_enqueue_style( 'veahealth', VEAHEALTH_URI . '/assets/css/site.css', array( 'veahealth-fonts' ), veahealth_asset_version( '/assets/css/site.css' ) );
 
 	/*
 	 * Treatment pages used to load a stylesheet of their own — one per
@@ -26,28 +49,38 @@ function veahealth_assets() {
 	 * them and it is 19 KB.
 	 */
 	if ( is_singular( 'service' ) ) {
-		wp_enqueue_style( 'veahealth-treatment', VEAHEALTH_URI . '/assets/css/treatment.css', array( 'veahealth' ), $ver );
-		wp_enqueue_script( 'veahealth-treatment', VEAHEALTH_URI . '/assets/js/treatment.js', array(), $ver, true );
+		wp_enqueue_style( 'veahealth-treatment', VEAHEALTH_URI . '/assets/css/treatment.css', array( 'veahealth' ), veahealth_asset_version( '/assets/css/treatment.css' ) );
+		wp_enqueue_script( 'veahealth-treatment', VEAHEALTH_URI . '/assets/js/treatment.js', array(), veahealth_asset_version( '/assets/js/treatment.js' ), true );
 
 		// The room. Only where the treatment has enough behind it to fill one.
 		if ( veahealth_has_room( get_queried_object_id() ) ) {
-			wp_enqueue_style( 'veahealth-room', VEAHEALTH_URI . '/assets/css/room.css', array( 'veahealth-treatment' ), $ver );
-			wp_enqueue_script( 'veahealth-room', VEAHEALTH_URI . '/assets/js/room.js', array(), $ver, true );
+			wp_enqueue_style( 'veahealth-room', VEAHEALTH_URI . '/assets/css/room.css', array( 'veahealth-treatment' ), veahealth_asset_version( '/assets/css/room.css' ) );
+			wp_enqueue_script( 'veahealth-room', VEAHEALTH_URI . '/assets/js/room.js', array(), veahealth_asset_version( '/assets/js/room.js' ), true );
 		}
+	}
+
+	/*
+	 * Reading. Articles get their own surface, type scale and scroll behaviour;
+	 * a page of marketing sections and 1,500 words of prose are not the same
+	 * design problem.
+	 */
+	if ( is_singular( 'post' ) ) {
+		wp_enqueue_style( 'veahealth-reading', VEAHEALTH_URI . '/assets/css/reading.css', array( 'veahealth' ), veahealth_asset_version( '/assets/css/reading.css' ) );
+		wp_enqueue_script( 'veahealth-reading', VEAHEALTH_URI . '/assets/js/reading.js', array(), veahealth_asset_version( '/assets/js/reading.js' ), true );
 	}
 
 	// The motion layer's own stylesheet. Small, and harmless when motion.js
 	// decides not to run — none of its classes get applied.
-	wp_enqueue_style( 'veahealth-motion', VEAHEALTH_URI . '/assets/css/motion.css', array( 'veahealth' ), $ver );
+	wp_enqueue_style( 'veahealth-motion', VEAHEALTH_URI . '/assets/css/motion.css', array( 'veahealth' ), veahealth_asset_version( '/assets/css/motion.css' ) );
 
-	wp_enqueue_script( 'veahealth', VEAHEALTH_URI . '/assets/js/site.js', array(), $ver, true );
+	wp_enqueue_script( 'veahealth', VEAHEALTH_URI . '/assets/js/site.js', array(), veahealth_asset_version( '/assets/js/site.js' ), true );
 
 	/*
 	 * motion.js is a ~9 KB loader. It fetches GSAP, ScrollTrigger and Lenis
 	 * itself, and only after checking that the visit can use them: a visitor
 	 * who has asked for reduced motion never downloads the 133 KB of libraries.
 	 */
-	wp_enqueue_script( 'veahealth-motion', VEAHEALTH_URI . '/assets/js/motion.js', array( 'veahealth' ), $ver, true );
+	wp_enqueue_script( 'veahealth-motion', VEAHEALTH_URI . '/assets/js/motion.js', array( 'veahealth' ), veahealth_asset_version( '/assets/js/motion.js' ), true );
 	wp_localize_script(
 		'veahealth-motion',
 		'VH_MOTION',

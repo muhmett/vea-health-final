@@ -78,12 +78,34 @@ while ( have_posts() ) :
 		</section>
 
 		<section class="section">
-			<div class="shell shell-narrow">
-				<div class="entry post-body"><?php the_content(); ?></div>
+			<div class="shell">
+				<?php
+				/*
+				 * The contents is built here rather than inside the content, so
+				 * it can sit in a rail beside the article on a wide screen and
+				 * fold away above it on a narrow one — and so it stays in step
+				 * with headings edited in the admin.
+				 */
+				$toc = veahealth_post_toc( apply_filters( 'the_content', get_the_content() ) );
+				?>
+				<div class="post-layout">
+					<?php if ( $toc ) : ?>
+						<aside class="post-aside">
+							<div class="post-aside__inner">
+								<?php echo $toc; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
+							</div>
+						</aside>
+					<?php endif; ?>
 
-				<p class="post-disclaimer">
-					<?php esc_html_e( 'This article is general information and is not a diagnosis or a treatment plan. Whether a treatment suits you can only be determined by a clinician who has examined you.', 'veahealth' ); ?>
-				</p>
+					<div class="post-read">
+						<?php veahealth_post_keys( $id ); ?>
+						<div class="entry post-body"><?php the_content(); ?></div>
+
+						<p class="post-disclaimer">
+							<?php esc_html_e( 'This article is general information and is not a diagnosis or a treatment plan. Whether a treatment suits you can only be determined by a clinician who has examined you.', 'veahealth' ); ?>
+						</p>
+					</div>
+				</div>
 			</div>
 		</section>
 

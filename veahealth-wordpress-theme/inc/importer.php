@@ -345,6 +345,7 @@ function veahealth_install_run( $overwrite = false ) {
 		update_post_meta( $id, '_vh_dek', $a['dek'] );
 		update_post_meta( $id, '_vh_read', (int) $a['read'] );
 		update_post_meta( $id, '_vh_cover', $a['cover'] );
+		update_post_meta( $id, '_vh_keys', isset( $a['keys'] ) ? $a['keys'] : array() );
 		if ( $a['credit'] ) {
 			update_post_meta( $id, '_vh_credit', $a['credit'] );
 			update_post_meta( $id, '_vh_credit_url', $a['credit_url'] );
