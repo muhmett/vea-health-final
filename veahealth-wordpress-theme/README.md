@@ -159,6 +159,50 @@ constrain what the pages claim:
 The clinical descriptions are of standard technique and each of those pages says
 so. **Have a partner clinician read them before you go live.**
 
+### The journal — 20 articles
+
+The blog was three posts, one of which was WordPress's own “Hello world!”, and
+none of them were categorised. It now carries **20 articles, about 12,800
+words**, written for the questions people actually type into Google before they
+book treatment abroad.
+
+| Category | Articles | What they cover |
+|---|---|---|
+| Costs and money | 4 | Itemised implant and graft pricing, why Turkey is cheaper, the costs quotes leave out |
+| Safety and choosing a clinic | 4 | Verifying a clinic, health tourism authorisation, red flags, what happens if it goes wrong |
+| Choosing a treatment | 5 (+2 carried over) | All-on-4 vs All-on-6, zirconia vs e.max, DHI vs Sapphire FUE, graft numbers, grafting decisions |
+| Planning your trip | 4 | Days needed per treatment, flying after surgery, packing, Istanbul for patients |
+| Recovery and aftercare | 3 | The first fortnight after a transplant, making implants last, realistic timelines |
+
+**The architecture is deliberate.** Each article ends by linking to the
+treatment pages it concerns: the article catches the search, the treatment page
+converts it. Five articles aimed at competitive head terms run to 950–1,570
+words; the rest answer long-tail questions in 400–560, which is the right length
+for a question with one answer.
+
+**Two things were not invented.** No prices beyond what the treatment pages
+already quote, and no citations — where a claim would need a study behind it,
+the article makes the weaker claim it can support instead.
+
+### Where the article images came from
+
+Four covers are CC0 photographs from Openverse, credited under each one in the
+page. The other sixteen are built from the theme's own artwork.
+
+That split is a finding, not a preference. A free-licence image search for
+“dental clinic” returns 1946 railway archive photographs; one for “hair
+transplant” returns another clinic's marketing photographs of their own named
+surgeon. Of the ten searches run, six produced nothing usable and two produced
+images of identifiable people at unrelated events. Those were discarded rather
+than published.
+
+Everything, both sources, goes through one grading pass — cooled towards the
+brand teal, exposure normalised to a common target so a bright hotel room and a
+near-black 3D render sit in the same tonal band, vignetted and lightly grained.
+The result is that the archive reads as one publication rather than a folder of
+found images. If you replace a cover, run it through the same grade or it will
+stand out.
+
 ### Enquiries — leads that cannot get lost
 
 The old form had no `action`, no backend and no email or phone field. It opened
@@ -338,6 +382,9 @@ Tested on WordPress 7.1 with PHP 8.4 before shipping:
 - The room: 0 axe violations with it open and every note expanded, 3 treatments
   × light and dark; opens and reads with WebGL unavailable; hidden entirely
   when JavaScript is off
+- All 22 articles: one `h1` each, cover loaded, category assigned, Article
+  schema carrying an image, and internal links resolved — no unexpanded tokens
+- Sitemap: 59 URLs across posts, pages, treatments and both taxonomies
 
 ---
 

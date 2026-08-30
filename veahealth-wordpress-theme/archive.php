@@ -11,6 +11,15 @@ veahealth_page_hero( __( 'Journal', 'veahealth' ), get_the_archive_title(), wp_s
 <section class="section">
 	<div class="shell">
 		<?php if ( have_posts() ) : ?>
+			<?php
+			/*
+			 * The cards are h3s. On pages where they sit under a section
+			 * heading that is correct; on an archive there is nothing between
+			 * the page h1 and them, so the level jumps and a screen reader
+			 * announces a missing level. This is that level.
+			 */
+			?>
+			<h2 class="screen-reader-text"><?php esc_html_e( 'Articles', 'veahealth' ); ?></h2>
 			<div class="grid g-2" data-stagger="90">
 				<?php
 				while ( have_posts() ) :

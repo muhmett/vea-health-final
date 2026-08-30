@@ -288,6 +288,21 @@ function veahealth_install_run( $overwrite = false ) {
 		veahealth_register_privacy_page( $pages['privacy-policy'] );
 	}
 
+	/* ---- journal categories ---- */
+	$cats = array();
+	foreach ( veahealth_blog_categories() as $name => $description ) {
+		$term = term_exists( $name, 'category' );
+		if ( ! $term ) {
+			$term = wp_insert_term( $name, 'category', array( 'description' => $description ) );
+		} elseif ( ! is_wp_error( $term ) ) {
+			wp_update_term( (int) $term['term_id'], 'category', array( 'description' => $description ) );
+		}
+		if ( ! is_wp_error( $term ) ) {
+			$cats[ $name ] = (int) $term['term_id'];
+		}
+	}
+	$log[] = sprintf( __( 'Journal categories ready: %d.', 'veahealth' ), count( $cats ) );
+
 	/* ---- articles ---- */
 	foreach ( veahealth_content_posts() as $p ) {
 		veahealth_upsert(
@@ -302,7 +317,89 @@ function veahealth_install_run( $overwrite = false ) {
 			$overwrite
 		);
 	}
-	$log[] = sprintf( __( 'Articles ready: %d.', 'veahealth' ), count( veahealth_content_posts() ) );
+
+	/*
+	 * The journal proper. Dated backwards from today, a few days apart, so the
+	 * archive does not read as twenty things published in the same minute —
+	 * which is what it is, but is not what it should look like.
+	 */
+	$written = 0;
+	$when    = current_time( 'timestamp' );
+	foreach ( veahealth_blog_articles() as $i => $a ) {
+		$when -= ( 3 + ( $i % 4 ) ) * DAY_IN_SECONDS;
+		list( $id, $action ) = veahealth_upsert(
+			array(
+				'post_title'   => $a['title'],
+				'post_content' => $a['content'],
+				'post_excerpt' => $a['excerpt'],
+				'post_date'    => gmdate( 'Y-m-d H:i:s', $when ),
+			),
+			'post',
+			$a['slug'],
+			$overwrite
+		);
+		if ( ! $id ) {
+			continue;
+		}
+		$written++;
+		update_post_meta( $id, '_vh_dek', $a['dek'] );
+		update_post_meta( $id, '_vh_read', (int) $a['read'] );
+		update_post_meta( $id, '_vh_cover', $a['cover'] );
+		if ( $a['credit'] ) {
+			update_post_meta( $id, '_vh_credit', $a['credit'] );
+			update_post_meta( $id, '_vh_credit_url', $a['credit_url'] );
+		}
+		if ( isset( $cats[ $a['cat'] ] ) ) {
+			wp_set_post_categories( $id, array( $cats[ $a['cat'] ] ), false );
+		}
+	}
+	$log[] = sprintf(
+		__( 'Journal: %1$d articles ready, across %2$d categories.', 'veahealth' ),
+		$written,
+		count( $cats )
+	);
+
+	/*
+	 * WordPress ships a post called "Hello world!" on every new install. It is
+	 * the single most obvious sign of a site nobody has finished, and it will
+	 * sit in the journal alongside the articles unless something removes it.
+	 */
+	$hello = get_page_by_path( 'hello-world', OBJECT, 'post' );
+	if ( $hello && 'publish' === $hello->post_status && strlen( wp_strip_all_tags( $hello->post_content ) ) < 200 ) {
+		wp_trash_post( $hello->ID );
+		$log[] = __( 'Removed the default “Hello world!” post.', 'veahealth' );
+	}
+
+	/*
+	 * Nothing should be left in "Uncategorized". It is WordPress's placeholder,
+	 * it shows in the category list and on every card, and it reads as a site
+	 * nobody finished. The two carried-over articles land there, so move them
+	 * somewhere real and repoint the default so future posts do not repeat it.
+	 */
+	if ( isset( $cats['Choosing a treatment'] ) ) {
+		$fallback = $cats['Choosing a treatment'];
+		update_option( 'default_category', $fallback );
+
+		$uncat = get_term_by( 'slug', 'uncategorized', 'category' );
+		if ( $uncat ) {
+			$orphans = get_posts( array(
+				'post_type'      => 'post',
+				'posts_per_page' => -1,
+				'category'       => $uncat->term_id,
+				'fields'         => 'ids',
+			) );
+			foreach ( $orphans as $orphan ) {
+				wp_set_post_categories( $orphan, array( $fallback ), false );
+			}
+			if ( $orphans ) {
+				$log[] = sprintf(
+					/* translators: %d: number of articles moved */
+					__( 'Moved %d article(s) out of “Uncategorized”.', 'veahealth' ),
+					count( $orphans )
+				);
+			}
+		}
+	}
 
 	/* ---- front page and posts page ---- */
 	if ( isset( $pages['home'] ) ) {

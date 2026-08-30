@@ -186,8 +186,15 @@ function veahealth_json_ld() {
 				);
 			}
 		} elseif ( is_singular( 'post' ) ) {
-			$type    = 'Article';
-			$graph[] = array(
+			$type = 'Article';
+			$cats = get_the_category( $post->ID );
+			/*
+			 * The cover comes from the helper, not from the featured image:
+			 * the installer assigns covers as theme assets rather than as
+			 * attachments, so get_the_post_thumbnail_url() is empty for every
+			 * article and Google was being handed a null image.
+			 */
+			$article = array(
 				'@type'            => 'Article',
 				'@id'              => $url . '#article',
 				'headline'         => get_the_title( $post ),
@@ -197,8 +204,16 @@ function veahealth_json_ld() {
 				'author'           => array( '@id' => home_url( '/#organization' ) ),
 				'publisher'        => array( '@id' => home_url( '/#organization' ) ),
 				'mainEntityOfPage' => $url,
-				'image'            => get_the_post_thumbnail_url( $post, 'veahealth-wide' ),
+				'image'            => function_exists( 'veahealth_post_cover' )
+					? veahealth_post_cover( $post->ID, '1600' )
+					: get_the_post_thumbnail_url( $post, 'veahealth-wide' ),
+				'inLanguage'       => get_bloginfo( 'language' ),
+				'wordCount'        => str_word_count( wp_strip_all_tags( $post->post_content ) ),
 			);
+			if ( $cats ) {
+				$article['articleSection'] = $cats[0]->name;
+			}
+			$graph[] = $article;
 		}
 	} elseif ( is_post_type_archive( 'service' ) ) {
 		$url  = get_post_type_archive_link( 'service' );

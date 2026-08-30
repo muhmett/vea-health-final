@@ -25,4 +25,5 @@ require_once VEAHEALTH_DIR . '/inc/content.php';
 require_once VEAHEALTH_DIR . '/inc/service-data.php';
 require_once VEAHEALTH_DIR . '/inc/service-parts.php';
 require_once VEAHEALTH_DIR . '/inc/room.php';
+require_once VEAHEALTH_DIR . '/inc/blog-data.php';
 require_once VEAHEALTH_DIR . '/inc/importer.php';

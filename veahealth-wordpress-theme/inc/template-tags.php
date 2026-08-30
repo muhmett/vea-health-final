@@ -381,3 +381,69 @@ class VeaHealth_Plain_Links extends Walker_Nav_Menu {
 	}
 	public function end_el( &$output, $item, $depth = 0, $args = null ) {}
 }
+
+/**
+ * More from the journal, at the end of an article.
+ *
+ * Prefers the same category, then falls back to recent — an article that is the
+ * only one in its category should still not dead-end the reader.
+ */
+function veahealth_related_articles( $post_id, $limit = 3 ) {
+	$cats = wp_get_post_categories( $post_id );
+	$args = array(
+		'post_type'      => 'post',
+		'posts_per_page' => $limit,
+		'post__not_in'   => array( $post_id ),
+		'ignore_sticky_posts' => true,
+	);
+	if ( $cats ) {
+		$args['category__in'] = $cats;
+	}
+	$posts = get_posts( $args );
+	if ( count( $posts ) < $limit ) {
+		$posts = array_merge( $posts, get_posts( array(
+			'post_type'      => 'post',
+			'posts_per_page' => $limit - count( $posts ),
+			'post__not_in'   => array_merge( array( $post_id ), wp_list_pluck( $posts, 'ID' ) ),
+			'ignore_sticky_posts' => true,
+		) ) );
+	}
+	if ( ! $posts ) {
+		return;
+	}
+	?>
+	<section class="section section--tint">
+		<div class="shell">
+			<?php
+			veahealth_section_head(
+				__( 'More from the journal', 'veahealth' ),
+				__( 'Written for the questions people ask before they book.', 'veahealth' )
+			);
+			?>
+			<div class="grid g-3" data-stagger="90">
+				<?php
+				global $post;
+				foreach ( $posts as $post ) {
+					setup_postdata( $post );
+					get_template_part( 'template-parts/card', 'post' );
+				}
+				wp_reset_postdata();
+				?>
+			</div>
+		</div>
+	</section>
+	<?php
+}
+
+/** An article's cover, wherever it is needed. */
+function veahealth_post_cover( $post_id, $size = '900' ) {
+	$thumb = get_the_post_thumbnail_url( $post_id, 'veahealth-card' );
+	if ( $thumb ) {
+		return $thumb;
+	}
+	$slug = get_post_meta( $post_id, '_vh_cover', true );
+	if ( $slug && file_exists( VEAHEALTH_DIR . '/assets/img/blog/' . $slug . '-' . $size . '.webp' ) ) {
+		return VEAHEALTH_URI . '/assets/img/blog/' . $slug . '-' . $size . '.webp';
+	}
+	return VEAHEALTH_URI . '/assets/img/art/blog-cover-dental-ceramic-sand-900.webp';
+}
