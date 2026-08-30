@@ -69,6 +69,12 @@ function veahealth_assets() {
 		wp_enqueue_script( 'veahealth-reading', VEAHEALTH_URI . '/assets/js/reading.js', array(), veahealth_asset_version( '/assets/js/reading.js' ), true );
 	}
 
+	/*
+	 * The particle field. Loaded on every page, and it removes itself on the
+	 * spot for reduced motion or Save-Data.
+	 */
+	wp_enqueue_script( 'veahealth-particles', VEAHEALTH_URI . '/assets/js/particles.js', array(), veahealth_asset_version( '/assets/js/particles.js' ), true );
+
 	// The motion layer's own stylesheet. Small, and harmless when motion.js
 	// decides not to run — none of its classes get applied.
 	wp_enqueue_style( 'veahealth-motion', VEAHEALTH_URI . '/assets/css/motion.css', array( 'veahealth' ), veahealth_asset_version( '/assets/css/motion.css' ) );

@@ -2,19 +2,89 @@
 /**
  * Site footer, cookie notice and floating WhatsApp button.
  *
+ * The previous version listed all twenty-one treatments in a column. Nobody
+ * reads a link dump, and Google has the sitemap, so this links the three
+ * groups instead and gives the space back to the things a visitor at the
+ * bottom of a page actually wants: how to reach a person, and where the clinic
+ * is.
+ *
  * @package VeaHealth
  */
 ?>
 </main>
 
 <footer class="site-footer">
-	<div class="shell">
-		<div class="foot-grid">
-			<div>
+	<div class="shell foot-inner">
+
+		<?php
+		/*
+		 * The swarm gets a reserved square of its own. It used to run across the
+		 * whole footer and settled its shapes directly on top of the Company
+		 * column, which is precisely the thing a background effect must never
+		 * do. Giving it a box means the overlap is impossible by construction
+		 * rather than by tuning opacity until it looks survivable.
+		 */
+		?>
+		<div class="foot-stage" data-particles aria-hidden="true"></div>
+
+		<div class="foot-main">
+
+		<div class="foot-top">
+			<div class="foot-say">
 				<?php echo veahealth_brand(); ?>
-				<p class="foot-disclaimer">
-					<?php esc_html_e( 'VeaHealth is a medical tourism coordinator based in Istanbul. Treatment is carried out by licensed partner clinics and their clinical teams. Information on this site is general and is not a substitute for a consultation, diagnosis or treatment plan from a qualified clinician.', 'veahealth' ); ?>
+				<p class="foot-line">
+					<?php esc_html_e( 'Dental and hair restoration in Istanbul, coordinated end to end — a written plan and a fixed price before you travel.', 'veahealth' ); ?>
 				</p>
+			</div>
+			<a class="btn btn--primary btn--lg" href="<?php echo esc_url( veahealth_contact_url() ); ?>">
+				<?php esc_html_e( 'Get a free assessment', 'veahealth' ); ?> <?php echo veahealth_icon( 'arrow' ); ?>
+			</a>
+		</div>
+
+		<div class="foot-cols">
+			<nav class="foot-col" aria-label="<?php esc_attr_e( 'Treatments', 'veahealth' ); ?>">
+				<h2><?php esc_html_e( 'Treatments', 'veahealth' ); ?></h2>
+				<ul>
+					<?php
+					foreach ( get_terms( array( 'taxonomy' => 'service_category', 'hide_empty' => true ) ) as $term ) {
+						printf(
+							'<li><a href="%s">%s</a></li>',
+							esc_url( get_term_link( $term ) ),
+							esc_html( $term->name )
+						);
+					}
+					?>
+					<li><a href="<?php echo esc_url( get_post_type_archive_link( 'service' ) ); ?>"><?php esc_html_e( 'All treatments', 'veahealth' ); ?></a></li>
+				</ul>
+			</nav>
+
+			<nav class="foot-col" aria-label="<?php esc_attr_e( 'Company', 'veahealth' ); ?>">
+				<h2><?php esc_html_e( 'Company', 'veahealth' ); ?></h2>
+				<?php
+				if ( has_nav_menu( 'footer' ) ) {
+					wp_nav_menu( array( 'theme_location' => 'footer', 'container' => false, 'menu_class' => '', 'depth' => 1 ) );
+				}
+				?>
+			</nav>
+
+			<div class="foot-col foot-col--contact">
+				<h2><?php esc_html_e( 'Talk to a coordinator', 'veahealth' ); ?></h2>
+				<ul>
+					<?php if ( veahealth_option( 'email' ) ) : ?>
+						<li><a href="mailto:<?php echo esc_attr( veahealth_option( 'email' ) ); ?>"><?php echo esc_html( veahealth_option( 'email' ) ); ?></a></li>
+					<?php endif; ?>
+					<?php if ( veahealth_option( 'phone' ) ) : ?>
+						<li><a href="tel:<?php echo esc_attr( preg_replace( '/[^\d+]/', '', veahealth_option( 'phone' ) ) ); ?>"><?php echo esc_html( veahealth_option( 'phone' ) ); ?></a></li>
+					<?php endif; ?>
+					<?php if ( veahealth_whatsapp_url() ) : ?>
+						<li><a href="<?php echo esc_url( veahealth_whatsapp_url() ); ?>" rel="noopener"><?php esc_html_e( 'WhatsApp, 7/24', 'veahealth' ); ?></a></li>
+					<?php endif; ?>
+				</ul>
+				<address>
+					<?php echo esc_html( veahealth_option( 'street' ) ); ?><br>
+					<?php echo esc_html( trim( veahealth_option( 'postcode' ) . ' ' . veahealth_option( 'district' ) ) ); ?><br>
+					<?php echo esc_html( veahealth_option( 'city' ) ); ?>, <?php esc_html_e( 'Türkiye', 'veahealth' ); ?>
+				</address>
 				<?php
 				$social = array(
 					'facebook'  => array( 'fb', __( 'Facebook', 'veahealth' ) ),
@@ -38,104 +108,23 @@
 				}
 				?>
 			</div>
-
-			<div class="foot-col">
-				<h3><?php esc_html_e( 'Treatments', 'veahealth' ); ?></h3>
-				<ul>
-					<?php
-					foreach ( get_terms( array( 'taxonomy' => 'service_category', 'hide_empty' => true ) ) as $term ) {
-						$items = get_posts(
-							array(
-								'post_type'      => 'service',
-								'posts_per_page' => 12,
-								'orderby'        => 'menu_order',
-								'order'          => 'ASC',
-								'tax_query'      => array( array( 'taxonomy' => 'service_category', 'field' => 'term_id', 'terms' => $term->term_id ) ),
-							)
-						);
-						foreach ( $items as $item ) {
-							printf( '<li><a href="%s">%s</a></li>', esc_url( get_permalink( $item ) ), esc_html( get_the_title( $item ) ) );
-						}
-					}
-					?>
-				</ul>
-			</div>
-
-			<div class="foot-col">
-				<h3><?php esc_html_e( 'Company', 'veahealth' ); ?></h3>
-				<?php
-				if ( has_nav_menu( 'footer' ) ) {
-					wp_nav_menu( array( 'theme_location' => 'footer', 'container' => false, 'menu_class' => '', 'depth' => 1 ) );
-				}
-				?>
-			</div>
-
-			<div class="foot-col">
-				<h3><?php esc_html_e( 'Contact', 'veahealth' ); ?></h3>
-				<ul>
-					<?php if ( veahealth_option( 'email' ) ) : ?>
-						<li><a href="mailto:<?php echo esc_attr( veahealth_option( 'email' ) ); ?>"><?php echo esc_html( veahealth_option( 'email' ) ); ?></a></li>
-					<?php endif; ?>
-					<?php if ( veahealth_option( 'phone' ) ) : ?>
-						<li><a href="tel:<?php echo esc_attr( preg_replace( '/[^\d+]/', '', veahealth_option( 'phone' ) ) ); ?>"><?php echo esc_html( veahealth_option( 'phone' ) ); ?></a></li>
-					<?php endif; ?>
-					<?php if ( veahealth_whatsapp_url() ) : ?>
-						<li><a href="<?php echo esc_url( veahealth_whatsapp_url() ); ?>" rel="noopener"><?php esc_html_e( 'WhatsApp', 'veahealth' ); ?></a></li>
-					<?php endif; ?>
-					<li>
-						<address style="font-style:normal">
-							<?php echo esc_html( veahealth_option( 'street' ) ); ?><br>
-							<?php echo esc_html( veahealth_option( 'postcode' ) . ' ' . veahealth_option( 'district' ) ); ?><br>
-							<?php echo esc_html( veahealth_option( 'city' ) ); ?>, <?php esc_html_e( 'Türkiye', 'veahealth' ); ?>
-						</address>
-					</li>
-				</ul>
-				<h3 style="margin-top:26px"><?php esc_html_e( 'Opening hours', 'veahealth' ); ?></h3>
-				<ul>
-					<?php foreach ( preg_split( '/\r\n|\r|\n/', (string) veahealth_option( 'hours' ) ) as $line ) : ?>
-						<?php if ( trim( $line ) ) : ?>
-							<li><?php echo esc_html( trim( $line ) ); ?></li>
-						<?php endif; ?>
-					<?php endforeach; ?>
-				</ul>
-			</div>
 		</div>
 
+		</div><!-- /.foot-main -->
+
 		<div class="foot-bottom">
-			<span>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?>. <?php esc_html_e( 'All rights reserved.', 'veahealth' ); ?></span>
+			<p class="foot-legal">
+				&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?>.
+				<?php esc_html_e( 'A medical tourism coordinator. Treatment is carried out by licensed partner clinics; nothing here is a diagnosis.', 'veahealth' ); ?>
+			</p>
 			<?php
 			if ( has_nav_menu( 'legal' ) ) {
-				wp_nav_menu( array( 'theme_location' => 'legal', 'container' => false, 'menu_class' => '', 'depth' => 1, 'items_wrap' => '%3$s', 'walker' => new VeaHealth_Plain_Links() ) );
+				wp_nav_menu( array( 'theme_location' => 'legal', 'container' => false, 'menu_class' => 'foot-legal-links', 'depth' => 1, 'items_wrap' => '<div class="%2$s">%3$s</div>', 'walker' => new VeaHealth_Plain_Links() ) );
 			}
 			?>
-			<span class="sep"></span>
 		</div>
 	</div>
 </footer>
-
-<aside class="cookie" role="dialog" aria-labelledby="cookie-h" aria-describedby="cookie-p">
-	<h3 id="cookie-h"><?php esc_html_e( 'Cookies on this site', 'veahealth' ); ?></h3>
-	<p id="cookie-p"><?php esc_html_e( 'We use essential cookies to make the site work. With your consent we also use analytics cookies to understand which pages help patients most. No analytics tag loads until you choose.', 'veahealth' ); ?></p>
-	<div class="cookie-actions">
-		<button class="btn btn--primary" type="button" data-consent="all"><?php esc_html_e( 'Accept analytics', 'veahealth' ); ?></button>
-		<button class="btn btn--ghost" type="button" data-consent="necessary"><?php esc_html_e( 'Essential only', 'veahealth' ); ?></button>
-		<?php
-		$cookies = get_page_by_path( 'cookie-policy' );
-		if ( $cookies ) :
-			?>
-			<a class="btn btn--ghost" href="<?php echo esc_url( get_permalink( $cookies ) ); ?>"><?php esc_html_e( 'Read policy', 'veahealth' ); ?></a>
-		<?php endif; ?>
-	</div>
-</aside>
-
-<?php if ( veahealth_whatsapp_url() ) : ?>
-	<aside class="wa-float-wrap" aria-label="<?php esc_attr_e( 'Quick contact', 'veahealth' ); ?>">
-		<a class="wa-float" href="<?php echo esc_url( veahealth_whatsapp_url() ); ?>" rel="noopener"
-		   aria-label="<?php esc_attr_e( 'Chat with us on WhatsApp', 'veahealth' ); ?>">
-			<?php echo veahealth_icon( 'wa' ); ?><span><?php esc_html_e( 'Chat on WhatsApp', 'veahealth' ); ?></span>
-		</a>
-	</aside>
-<?php endif; ?>
 
 <?php wp_footer(); ?>
 </body>

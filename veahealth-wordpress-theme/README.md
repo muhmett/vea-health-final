@@ -226,6 +226,62 @@ for. Reduced motion keeps the progress bar and the tracking, which are
 wayfinding, and drops the reveal. With no JavaScript the contents is still a
 working `<details>` fold and every word is on the page.
 
+### The particle field
+
+A drifting field that answers the pointer, takes momentum from the scroll, and
+in the footer gathers into shapes from this business: a molar, an implant
+fixture, a follicle, the Istanbul skyline, the brand mark. The shapes are five
+SVG paths, rasterised and rejection-sampled so density follows area — which is
+why a tooth root reads as solid and a minaret reads as thin, rather than every
+outline coming out as wire.
+
+**On the count.** The brief was a billion. A billion points is around a thousand
+times what a browser can rasterise at sixty frames a second, so what is here is
+the largest number that holds the frame budget on the device actually looking at
+it, and every field thins itself automatically when it misses:
+
+Counts are derived from the area being covered, not fixed — one point per ~55
+CSS pixels for the ambient layer, one per ~22 for the swarm — and clamped:
+
+| | Ambient ceiling | Swarm ceiling | Typical total | Measured |
+|---|---|---|---|---|
+| Desktop | 26,000 | 6,000 | ~20,000 | 57fps |
+| Phone | 6,000 | 3,200 | ~9,000 | 61fps |
+
+Density has to follow area or the effect destroys itself at the moment it
+succeeds: a count sized for a footer-width canvas put roughly eight points on
+every pixel of a 300px square, and once the shapes finished gathering the whole
+square rendered as a solid teal block.
+
+Those frame rates are on **software rendering** — SwiftShader, no GPU at all —
+so they are a floor rather than a typical figure.
+
+**On not covering the text**, which is the constraint that shaped the design.
+Two separate layers, because one layer cannot be both dense and safe:
+
+- The **ambient** layer is a whisper — one to two pixels, five to twenty per cent
+  opacity — because it passes behind body copy. Every readable surface is also
+  given an opaque background so nothing drifts under a sentence. Measured: with
+  the field on versus off, 0.17% of pixels in a text-heavy region differ at all,
+  mean change 0.03 of 255.
+- The **footer swarm** is dense and bright, and it lives in a reserved square
+  beside the links rather than across the whole footer. It used to settle its
+  shapes directly on the Company column. Giving it a box makes the overlap
+  impossible by construction instead of by tuning opacity until it looks
+  survivable. Verified: zero footer text elements intersect the swarm.
+
+The field removes itself entirely for reduced motion, for Save-Data and slow
+connections, and it never starts without JavaScript — in which case the empty
+stage collapses rather than holding a gap open.
+
+### The footer
+
+Short. The previous one listed all twenty-one treatments in a column; nobody
+reads a link dump and Google has the sitemap. It now links the three treatment
+groups, keeps the company and legal menus, and gives the recovered space to what
+somebody at the bottom of a page actually wants — a way to reach a person, the
+street address, and one clear call to action.
+
 ### Cache busting
 
 Assets are versioned by their own modification time, not by the theme constant
