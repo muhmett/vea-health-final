@@ -429,6 +429,46 @@ function veahealth_tg_bot( $fresh = false ) {
 	return $bot;
 }
 
+/**
+ * Put a name to each id currently being alerted.
+ *
+ * The field holds bare numbers, and a bare number tells nobody anything six
+ * months later — least of all the thing an owner actually wants to know, which
+ * is who can read the enquiries. Resolved through the Bot API and cached, so
+ * opening the screen does not mean a call per id every time.
+ *
+ * @return array<string,array{name:string,type:string}> Keyed by chat id; an
+ *         entry the API would not resolve carries an empty name.
+ */
+function veahealth_tg_audience() {
+	$chats = veahealth_tg_chats();
+	if ( ! $chats || '' === veahealth_tg_token() ) {
+		return array();
+	}
+
+	$key = 'veahealth_tg_who_' . md5( veahealth_tg_token() . '|' . implode( ',', $chats ) );
+	$hit = get_transient( $key );
+	if ( is_array( $hit ) ) {
+		return $hit;
+	}
+
+	$out = array();
+	foreach ( $chats as $chat ) {
+		$res  = veahealth_tg_call( 'getChat', array( 'chat_id' => $chat ), 6 );
+		$info = $res['ok'] && isset( $res['body']['result'] ) ? $res['body']['result'] : array();
+		$name = isset( $info['title'] )
+			? $info['title']
+			: trim( ( isset( $info['first_name'] ) ? $info['first_name'] : '' ) . ' ' . ( isset( $info['last_name'] ) ? $info['last_name'] : '' ) );
+		$out[ $chat ] = array(
+			'name' => (string) $name,
+			'type' => isset( $info['type'] ) ? (string) $info['type'] : '',
+		);
+	}
+
+	set_transient( $key, $out, HOUR_IN_SECONDS );
+	return $out;
+}
+
 /* ==========================================================================
    Settings
    ========================================================================== */
@@ -677,8 +717,28 @@ function veahealth_tg_page() {
 						<textarea name="veahealth_tg_chats" id="tg_chats" rows="4" class="regular-text code"
 						          placeholder="123456789&#10;-1001234567890"><?php echo esc_textarea( get_option( 'veahealth_tg_chats', '' ) ); ?></textarea>
 						<p class="description">
-							<?php esc_html_e( 'One chat id per line. A person is a positive number, a group is a negative one. Every id listed gets every enquiry.', 'veahealth' ); ?>
+							<?php esc_html_e( 'One chat id per line. A person is a positive number, a group is a negative one. Every id listed gets every enquiry, and nobody else does — opening the bot gets a stranger nothing.', 'veahealth' ); ?>
 						</p>
+
+						<?php $audience = veahealth_tg_audience(); ?>
+						<?php if ( $audience ) : ?>
+							<p style="margin-bottom:.3rem"><strong><?php esc_html_e( 'Reading your enquiries right now', 'veahealth' ); ?></strong></p>
+							<ul style="margin-top:0;list-style:disc;padding-left:1.4rem">
+								<?php foreach ( $audience as $id => $who ) : ?>
+									<li>
+										<?php if ( '' !== $who['name'] ) : ?>
+											<strong><?php echo esc_html( $who['name'] ); ?></strong>
+											<?php if ( in_array( $who['type'], array( 'group', 'supergroup' ), true ) ) : ?>
+												— <?php esc_html_e( 'a group: everyone in it reads every enquiry', 'veahealth' ); ?>
+											<?php endif; ?>
+										<?php else : ?>
+											<em><?php esc_html_e( 'Telegram would not identify this one — it may be a wrong id, or the bot may have been removed from it.', 'veahealth' ); ?></em>
+										<?php endif; ?>
+										<code style="margin-left:.4rem"><?php echo esc_html( $id ); ?></code>
+									</li>
+								<?php endforeach; ?>
+							</ul>
+						<?php endif; ?>
 					</td>
 				</tr>
 			</table>
