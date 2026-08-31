@@ -248,6 +248,15 @@ define( 'VEAHEALTH_HUBSPOT_TOKEN', 'pat-eu1-…' );
 The constant wins over the setting, and a secret in a file outside the database
 does not travel in every database backup.
 
+**Assigning the leads.** The *Assign leads to* field takes a numeric HubSpot user
+id (Settings → Users & Teams, open the user, take the number at the end of the
+address bar) and puts it on every new contact and deal. An unassigned lead sits
+in the list with nobody notified and nobody accountable, which on a lead pipeline
+is close to not having one. The owner and the lead status are written when the
+contact is created and never touched again: a returning enquirer whose status the
+clinic has already moved to *In Progress* is not dropped back to *New*, and a
+contact another rep owns is not reassigned by a second enquiry.
+
 **Three rules the code holds to:**
 
 - **The lead is never lost.** The enquiry is stored and emailed before HubSpot is
