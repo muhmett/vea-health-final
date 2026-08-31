@@ -444,12 +444,15 @@ function veahealth_tg_page() {
 	// the question anybody is actually asking.
 	if ( isset( $_POST['veahealth_tg_test'] ) && check_admin_referer( 'veahealth_tg_test' ) ) {
 		if ( '' === veahealth_tg_token() ) {
-			$notice = array( false, __( 'No token yet.', 'veahealth' ) );
+			$notice = array( 'error', __( 'No token yet.', 'veahealth' ) );
 		} elseif ( ! veahealth_tg_chats() ) {
 			$me     = veahealth_tg_call( 'getMe' );
 			$notice = $me['ok']
-				? array( false, sprintf( __( 'The token works — the bot is @%s. Now add a chat id below.', 'veahealth' ), isset( $me['body']['result']['username'] ) ? $me['body']['result']['username'] : '?' ) )
-				: array( false, sprintf( __( 'The token was refused: %s', 'veahealth' ), $me['error'] ) );
+				// Half-done, not broken: the token is good and only the
+				// destination is missing, so this reads as a next step rather
+				// than a failure.
+				? array( 'warning', sprintf( __( 'The token works — the bot is @%s. Now open that bot in Telegram, press Start, and use Find the chats below.', 'veahealth' ), isset( $me['body']['result']['username'] ) ? $me['body']['result']['username'] : '?' ) )
+				: array( 'error', sprintf( __( 'The token was refused: %s', 'veahealth' ), $me['error'] ) );
 		} else {
 			$ok   = 0;
 			$last = '';
@@ -469,15 +472,15 @@ function veahealth_tg_page() {
 				}
 			}
 			$notice = $ok
-				? array( true, sprintf( _n( 'Sent to %d chat. Check the phone.', 'Sent to %d chats. Check the phones.', $ok, 'veahealth' ), $ok ) )
-				: array( false, sprintf( __( 'Nothing was delivered: %s', 'veahealth' ), $last ) );
+				? array( 'success', sprintf( _n( 'Sent to %d chat. Check the phone.', 'Sent to %d chats. Check the phones.', $ok, 'veahealth' ), $ok ) )
+				: array( 'error', sprintf( __( 'Nothing was delivered: %s', 'veahealth' ), $last ) );
 		}
 	}
 
 	if ( isset( $_POST['veahealth_tg_find'] ) && check_admin_referer( 'veahealth_tg_find' ) ) {
 		$res = veahealth_tg_call( 'getUpdates', array( 'limit' => 20 ) );
 		if ( ! $res['ok'] ) {
-			$notice = array( false, sprintf( __( 'Could not read the bot: %s', 'veahealth' ), $res['error'] ) );
+			$notice = array( 'error', sprintf( __( 'Could not read the bot: %s', 'veahealth' ), $res['error'] ) );
 		} else {
 			$found = array();
 			foreach ( (array) $res['body']['result'] as $update ) {
@@ -498,7 +501,7 @@ function veahealth_tg_page() {
 		<h1><?php esc_html_e( 'Phone alerts', 'veahealth' ); ?></h1>
 
 		<?php if ( $notice ) : ?>
-			<div class="notice notice-<?php echo $notice[0] ? 'success' : 'error'; ?>"><p><?php echo esc_html( $notice[1] ); ?></p></div>
+			<div class="notice notice-<?php echo esc_attr( $notice[0] ); ?>"><p><?php echo esc_html( $notice[1] ); ?></p></div>
 		<?php endif; ?>
 
 		<p style="max-width:70ch">
@@ -509,7 +512,10 @@ function veahealth_tg_page() {
 		<ol style="max-width:70ch">
 			<li><?php esc_html_e( 'In Telegram, open a chat with @BotFather and send /newbot. Give it a name and a username. It replies with a token that looks like 8123456789:AAF-…', 'veahealth' ); ?></li>
 			<li><?php esc_html_e( 'Paste the token below and save.', 'veahealth' ); ?></li>
-			<li><?php esc_html_e( 'Each coordinator opens the new bot and presses Start. For a whole desk, make a Telegram group instead, add the bot to it, and send one message in the group.', 'veahealth' ); ?></li>
+			<li><?php esc_html_e( 'Each coordinator opens the new bot in Telegram and presses Start.', 'veahealth' ); ?></li>
+			<li>
+				<?php esc_html_e( 'For a whole desk, make a Telegram group instead, add the bot to it, and send /start@yourbotname in the group — a bot cannot see ordinary group messages unless it is addressed, so a plain "hello" will not register the group.', 'veahealth' ); ?>
+			</li>
 			<li><?php esc_html_e( 'Press Find the chats below, copy the ids into the field, and save.', 'veahealth' ); ?></li>
 			<li><?php esc_html_e( 'Press Send a test alert. The phone should buzz.', 'veahealth' ); ?></li>
 		</ol>
@@ -526,7 +532,7 @@ function veahealth_tg_page() {
 		<?php if ( null !== $found ) : ?>
 			<h2><?php esc_html_e( 'Chats that have written to the bot', 'veahealth' ); ?></h2>
 			<?php if ( ! $found ) : ?>
-				<p><?php esc_html_e( 'None yet. Open the bot in Telegram, press Start, then try again.', 'veahealth' ); ?></p>
+				<p><?php esc_html_e( 'None yet. Open the bot in Telegram and press Start, then try again. If you are after a group, send /start@yourbotname inside it — a plain message in a group is invisible to the bot.', 'veahealth' ); ?></p>
 			<?php else : ?>
 				<table class="widefat striped" style="max-width:48rem">
 					<thead><tr>
