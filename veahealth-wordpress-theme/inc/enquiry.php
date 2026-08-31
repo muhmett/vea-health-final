@@ -92,7 +92,17 @@ function veahealth_handle_enquiry( WP_REST_Request $request ) {
 		return new WP_REST_Response( array( 'ok' => false, 'error' => 'store_failed' ), 500 );
 	}
 
-	/* 2. Notify the coordinator. */
+	/*
+	 * 2. Ring the coordinator's phone. Registered first because it is the one
+	 * step where seconds matter — the lead has already gone to whoever answers
+	 * first — but it runs after the response is closed, so it costs the visitor
+	 * nothing.
+	 */
+	if ( function_exists( 'veahealth_alert_queue' ) ) {
+		veahealth_alert_queue( $post_id );
+	}
+
+	/* 3. The email, as the record and the fallback. */
 	$to = veahealth_option( 'enquiry_to' );
 	if ( ! is_email( $to ) ) {
 		$to = get_option( 'admin_email' );
@@ -136,7 +146,7 @@ function veahealth_handle_enquiry( WP_REST_Request $request ) {
 	update_post_meta( $post_id, '_vh_mailed', $sent ? 'yes' : 'no' );
 
 	/*
-	 * 3. Hand it to the CRM — queued, not called. The visitor already has their
+	 * 4. Hand it to the CRM — queued, not called. The visitor already has their
 	 * lead stored and the coordinator already has the email; HubSpot being slow
 	 * or down must not delay this response or fail the submission.
 	 */

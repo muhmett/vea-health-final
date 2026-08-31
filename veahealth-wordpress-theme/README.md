@@ -281,6 +281,47 @@ which has to be disclosed. While a token is configured the theme adds that
 paragraph to the privacy policy automatically and removes it again if you
 disconnect, so the policy never names a company you are not using.
 
+### Phone alerts
+
+HubSpot notifies, but only after the lead has synced, only through its own app,
+and only to somebody logged in — and the first clinic to reply is usually the
+one that gets the patient. So the site rings the coordinator directly: the
+moment an enquiry is stored, a Telegram message lands on their phone with the
+treatment, the country, the message, and the visitor's number already built
+into a WhatsApp button. Replying is one tap; no login anywhere.
+
+**Connecting it.** Enquiries → Phone alerts. Make a bot with @BotFather, paste
+the token, have each coordinator press Start on the bot (or add it to a group),
+press *Find the chats* to read the ids straight off the bot, save, then *Send a
+test alert* — the phone should buzz. A `VEAHEALTH_TELEGRAM_TOKEN` constant in
+`wp-config.php` overrides the stored one, same as the CRM token.
+
+**Why it is not on WP-Cron.** The CRM push is queued, because a minute either
+way costs nothing there. Here a minute is the entire feature, and cron on a
+quiet site fires on the next page view. So the alert goes out on the tail of the
+same request: the REST response is written, output buffers flushed,
+`fastcgi_finish_request()` (or LiteSpeed's equivalent) closes the connection,
+and only then is Telegram called. Measured end to end, the form returns in 53 ms
+having made **zero** outbound calls, and both alerts are delivered ~600 ms later
+with the visitor already looking at the thank-you.
+
+A chat that has been delivered to is recorded, so a retry for one coordinator
+never sends the same lead twice to another. Rate limits, 5xx and network drops
+are retried; a blocked bot or a chat that does not exist is recorded and left
+alone, because neither fixes itself. The Enquiries list carries an *Alert*
+column with the reason and a *Send again* link.
+
+**On the token.** Telegram authenticates in the request URL rather than a
+header, which makes it far easier to leak through an error string than a bearer
+token — a cURL failure will quote the whole URL back at you. Every message
+stored or displayed goes through a scrubber that removes both the token and the
+bot id first.
+
+**Privacy.** Enquiry details reaching a Telegram chat makes Telegram a processor,
+so the theme adds that paragraph to the privacy policy while alerts are
+configured and removes it again if they are turned off — the same contract the
+HubSpot disclosure follows.
+
 ### The particle field
 
 A drifting field that answers the pointer, takes momentum from the scroll, and
