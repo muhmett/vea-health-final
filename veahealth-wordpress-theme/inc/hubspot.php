@@ -49,6 +49,18 @@ function veahealth_hs_token() {
 	return (string) get_option( 'veahealth_hs_token', '' );
 }
 
+/**
+ * The HubSpot user new leads are assigned to, if one is set.
+ *
+ * An unassigned contact sits in the list with nobody notified and nobody
+ * accountable, which on a lead pipeline is close to not having it at all.
+ *
+ * @return string Numeric owner id, or an empty string.
+ */
+function veahealth_hs_owner() {
+	return (string) preg_replace( '/\D/', '', (string) get_option( 'veahealth_hs_owner', '' ) );
+}
+
 /** Is the integration configured at all? */
 function veahealth_hs_ready() {
 	return '' !== veahealth_hs_token();
@@ -163,6 +175,14 @@ function veahealth_hs_upsert_contact( $props ) {
 		 */
 		$patch = array_filter( $props, static function ( $v ) { return '' !== $v && null !== $v; } );
 		unset( $patch['email'] );
+		/*
+		 * Lead status and owner belong to the sales team, not to the form. A
+		 * returning enquirer whose status is already In Progress must not be
+		 * dropped back to New, and a contact another rep owns must not be
+		 * reassigned by a second enquiry. Both are set when the contact is
+		 * created and left alone afterwards.
+		 */
+		unset( $patch['hs_lead_status'], $patch['hubspot_owner_id'] );
 		$up = veahealth_hs_call( 'PATCH', '/crm/v3/objects/contacts/' . rawurlencode( $id ), array( 'properties' => $patch ) );
 		return array( 'ok' => $up['ok'], 'id' => $id, 'error' => $up['error'], 'status' => $up['status'] );
 	}
@@ -197,6 +217,10 @@ function veahealth_hs_add_deal( $contact_id, $name, $stage ) {
 	$props = array( 'dealname' => $name, 'pipeline' => 'default' );
 	if ( $stage ) {
 		$props['dealstage'] = $stage;
+	}
+	$owner = veahealth_hs_owner();
+	if ( $owner ) {
+		$props['hubspot_owner_id'] = $owner;
 	}
 	$res = veahealth_hs_call(
 		'POST',
@@ -245,6 +269,7 @@ function veahealth_hs_push( $post_id, $attempt = 1 ) {
 		'phone'     => $meta( '_vh_phone' ),
 		'country'   => $meta( '_vh_country' ),
 		'hs_lead_status' => 'NEW',
+		'hubspot_owner_id' => veahealth_hs_owner(),
 	);
 	$props = array_filter( $props, static function ( $v ) { return '' !== $v; } );
 
@@ -364,6 +389,7 @@ function veahealth_hs_register() {
 	register_setting( 'veahealth_hs', 'veahealth_hs_token', array( 'type' => 'string', 'sanitize_callback' => 'veahealth_hs_clean_token', 'default' => '' ) );
 	register_setting( 'veahealth_hs', 'veahealth_hs_deals', array( 'type' => 'boolean', 'sanitize_callback' => 'rest_sanitize_boolean', 'default' => false ) );
 	register_setting( 'veahealth_hs', 'veahealth_hs_stage', array( 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field', 'default' => '' ) );
+	register_setting( 'veahealth_hs', 'veahealth_hs_owner', array( 'type' => 'string', 'sanitize_callback' => 'veahealth_hs_clean_owner', 'default' => '' ) );
 }
 add_action( 'admin_init', 'veahealth_hs_register' );
 
@@ -372,6 +398,11 @@ function veahealth_hs_clean_token( $value ) {
 	$value = trim( (string) $value );
 	$value = preg_replace( '/^Bearer\s+/i', '', $value );
 	return preg_replace( '/[^A-Za-z0-9\-_.]/', '', $value );
+}
+
+/** An owner id is a number and nothing else. */
+function veahealth_hs_clean_owner( $value ) {
+	return (string) preg_replace( '/\D/', '', (string) $value );
 }
 
 function veahealth_hs_page() {
@@ -454,6 +485,16 @@ function veahealth_hs_page() {
 								       placeholder="appointmentscheduled">
 							</label>
 							<span class="description"><?php esc_html_e( 'Leave blank for the first stage of the default pipeline.', 'veahealth' ); ?></span>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="hs_owner"><?php esc_html_e( 'Assign leads to', 'veahealth' ); ?></label></th>
+					<td>
+						<input name="veahealth_hs_owner" id="hs_owner" type="text" class="regular-text"
+						       value="<?php echo esc_attr( get_option( 'veahealth_hs_owner', '' ) ); ?>" placeholder="98199210">
+						<p class="description">
+							<?php esc_html_e( 'The numeric HubSpot user id that new contacts and deals are assigned to. In HubSpot: Settings → Users & Teams, open the user, and take the number at the end of the address bar. Leave blank to leave leads unassigned.', 'veahealth' ); ?>
 						</p>
 					</td>
 				</tr>
