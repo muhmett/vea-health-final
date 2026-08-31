@@ -392,6 +392,43 @@ function veahealth_alert_queue( $post_id ) {
 	);
 }
 
+/**
+ * Who the token belongs to.
+ *
+ * Cached against a hash of the token rather than a fixed key, so changing the
+ * token invalidates the cache by itself and the token is never part of what is
+ * stored.
+ *
+ * @param bool $fresh Skip the cache.
+ * @return array{username:string,name:string}|null
+ */
+function veahealth_tg_bot( $fresh = false ) {
+	$token = veahealth_tg_token();
+	if ( '' === $token ) {
+		return null;
+	}
+	$key = 'veahealth_tg_bot_' . md5( $token );
+
+	if ( ! $fresh ) {
+		$hit = get_transient( $key );
+		if ( is_array( $hit ) ) {
+			return $hit;
+		}
+	}
+
+	$res = veahealth_tg_call( 'getMe', array(), 6 );
+	if ( ! $res['ok'] || empty( $res['body']['result']['username'] ) ) {
+		return null;
+	}
+
+	$bot = array(
+		'username' => (string) $res['body']['result']['username'],
+		'name'     => isset( $res['body']['result']['first_name'] ) ? (string) $res['body']['result']['first_name'] : '',
+	);
+	set_transient( $key, $bot, HOUR_IN_SECONDS );
+	return $bot;
+}
+
 /* ==========================================================================
    Settings
    ========================================================================== */
@@ -440,6 +477,19 @@ function veahealth_tg_page() {
 	$notice = null;
 	$found  = null;
 
+	// Taking an id straight from the list beats copying a long negative number
+	// on a phone, which is where this screen is usually opened.
+	if ( isset( $_POST['veahealth_tg_add'] ) && check_admin_referer( 'veahealth_tg_add' ) ) {
+		$add = veahealth_tg_clean_chats( wp_unslash( $_POST['veahealth_tg_add'] ) );
+		if ( '' !== $add ) {
+			update_option(
+				'veahealth_tg_chats',
+				implode( "\n", array_unique( array_merge( veahealth_tg_chats(), array( $add ) ) ) )
+			);
+			$notice = array( 'success', __( 'Added. Now press Send a test alert.', 'veahealth' ) );
+		}
+	}
+
 	// A real message to the real phones, because "the token is valid" is not
 	// the question anybody is actually asking.
 	if ( isset( $_POST['veahealth_tg_test'] ) && check_admin_referer( 'veahealth_tg_test' ) ) {
@@ -480,7 +530,20 @@ function veahealth_tg_page() {
 	if ( isset( $_POST['veahealth_tg_find'] ) && check_admin_referer( 'veahealth_tg_find' ) ) {
 		$res = veahealth_tg_call( 'getUpdates', array( 'limit' => 20 ) );
 		if ( ! $res['ok'] ) {
-			$notice = array( 'error', sprintf( __( 'Could not read the bot: %s', 'veahealth' ), $res['error'] ) );
+			/*
+			 * One failure here has a specific cause and a specific fix: a
+			 * webhook registered against the same bot takes ownership of its
+			 * updates, and getUpdates is refused with a 409 that says nothing
+			 * useful. Worth naming, because nobody guesses it.
+			 */
+			$hint = '';
+			if ( 409 === $res['status'] ) {
+				$hook = veahealth_tg_call( 'getWebhookInfo' );
+				if ( $hook['ok'] && ! empty( $hook['body']['result']['url'] ) ) {
+					$hint = ' ' . __( 'Something else is already receiving this bot\'s messages through a webhook. Either use a different bot for these alerts, or remove that webhook.', 'veahealth' );
+				}
+			}
+			$notice = array( 'error', sprintf( __( 'Could not read the bot: %s', 'veahealth' ), $res['error'] ) . $hint );
 		} else {
 			$found = array();
 			foreach ( (array) $res['body']['result'] as $update ) {
@@ -508,19 +571,37 @@ function veahealth_tg_page() {
 			<?php esc_html_e( 'Every enquiry rings a Telegram chat the moment it is submitted, with the treatment, the country, the message and a WhatsApp button already carrying the number. It is sent after the visitor has their answer, so a slow Telegram never delays the form, and it does not wait on HubSpot — the coordinator can reply without logging in to anything.', 'veahealth' ); ?>
 		</p>
 
+		<?php $bot = veahealth_tg_bot(); ?>
+
+		<?php if ( $bot ) : ?>
+			<div style="border:1px solid #c3c4c7;border-left:4px solid #2271b1;background:#fff;padding:1rem 1.2rem;max-width:70ch;margin:1.2rem 0">
+				<p style="margin-top:0"><strong><?php esc_html_e( 'Your bot', 'veahealth' ); ?></strong> —
+					<code>@<?php echo esc_html( $bot['username'] ); ?></code></p>
+				<p style="font-size:15px">
+					<a href="<?php echo esc_url( 'https://t.me/' . $bot['username'] ); ?>" target="_blank" rel="noopener"
+					   class="button button-primary button-hero" style="text-decoration:none">
+						<?php esc_html_e( 'Open the bot in Telegram', 'veahealth' ); ?>
+					</a>
+				</p>
+				<p class="description" style="margin-bottom:0">
+					<?php esc_html_e( 'Tap that on the phone Telegram is installed on, then press START in the chat that opens. The bot will not answer you — it has nothing to say, and that is normal. Come back here and press Find the chats.', 'veahealth' ); ?>
+				</p>
+			</div>
+		<?php endif; ?>
+
 		<h2><?php esc_html_e( 'Setting it up', 'veahealth' ); ?></h2>
 		<ol style="max-width:70ch">
 			<li><?php esc_html_e( 'In Telegram, open a chat with @BotFather and send /newbot. Give it a name and a username. It replies with a token that looks like 8123456789:AAF-…', 'veahealth' ); ?></li>
 			<li><?php esc_html_e( 'Paste the token below and save.', 'veahealth' ); ?></li>
-			<li><?php esc_html_e( 'Each coordinator opens the new bot in Telegram and presses Start.', 'veahealth' ); ?></li>
+			<li><?php esc_html_e( 'Open the bot with the button above and press START. Every coordinator who is to be alerted does this once, on their own phone.', 'veahealth' ); ?></li>
 			<li>
 				<?php esc_html_e( 'For a whole desk, make a Telegram group instead, add the bot to it, and send /start@yourbotname in the group — a bot cannot see ordinary group messages unless it is addressed, so a plain "hello" will not register the group.', 'veahealth' ); ?>
 			</li>
-			<li><?php esc_html_e( 'Press Find the chats below, copy the ids into the field, and save.', 'veahealth' ); ?></li>
+			<li><?php esc_html_e( 'Press Find the chats below and use Add on the row you want.', 'veahealth' ); ?></li>
 			<li><?php esc_html_e( 'Press Send a test alert. The phone should buzz.', 'veahealth' ); ?></li>
 		</ol>
 		<p style="max-width:70ch" class="description">
-			<?php esc_html_e( 'Telegram will not let a bot message somebody who has never written to it. That is a rule on their side, not a setting here — which is why step 3 exists.', 'veahealth' ); ?>
+			<?php esc_html_e( 'Telegram will not let a bot message somebody who has never written to it. That is a rule on their side, not a setting here — which is why step 3 exists, and why nothing arrives until it is done.', 'veahealth' ); ?>
 		</p>
 
 		<?php if ( $fixed ) : ?>
@@ -532,20 +613,43 @@ function veahealth_tg_page() {
 		<?php if ( null !== $found ) : ?>
 			<h2><?php esc_html_e( 'Chats that have written to the bot', 'veahealth' ); ?></h2>
 			<?php if ( ! $found ) : ?>
-				<p><?php esc_html_e( 'None yet. Open the bot in Telegram and press Start, then try again. If you are after a group, send /start@yourbotname inside it — a plain message in a group is invisible to the bot.', 'veahealth' ); ?></p>
+				<div class="notice notice-warning inline" style="max-width:70ch"><p>
+					<?php esc_html_e( 'Nothing has written to this bot yet, so there is no id to show. The usual reason is that START has not actually been pressed — the bot stays silent when you press it, so it is easy to think nothing happened.', 'veahealth' ); ?>
+				</p></div>
+				<ul style="max-width:70ch;list-style:disc;padding-left:1.4rem">
+					<li><?php esc_html_e( 'Use the Open the bot button above rather than searching Telegram, so there is no doubt you are in the right chat.', 'veahealth' ); ?></li>
+					<li><?php esc_html_e( 'In the chat, press START at the bottom. If there is no START button because the chat was opened before, send /start as an ordinary message.', 'veahealth' ); ?></li>
+					<li><?php esc_html_e( 'For a group: send /start@yourbotname inside the group, not a plain message.', 'veahealth' ); ?></li>
+					<li><?php esc_html_e( 'Telegram only keeps unread updates for 24 hours. If START was pressed yesterday, send /start once more.', 'veahealth' ); ?></li>
+				</ul>
 			<?php else : ?>
 				<table class="widefat striped" style="max-width:48rem">
 					<thead><tr>
 						<th><?php esc_html_e( 'Chat id', 'veahealth' ); ?></th>
 						<th><?php esc_html_e( 'Name', 'veahealth' ); ?></th>
 						<th><?php esc_html_e( 'Type', 'veahealth' ); ?></th>
+						<th></th>
 					</tr></thead>
 					<tbody>
-					<?php foreach ( $found as $id => $info ) : ?>
+					<?php
+					$already = veahealth_tg_chats();
+					foreach ( $found as $id => $info ) :
+						?>
 						<tr>
 							<td><code><?php echo esc_html( $id ); ?></code></td>
 							<td><?php echo esc_html( $info[0] ); ?></td>
 							<td><?php echo esc_html( $info[1] ); ?></td>
+							<td>
+								<?php if ( in_array( (string) $id, $already, true ) ) : ?>
+									<span class="description"><?php esc_html_e( 'Already added', 'veahealth' ); ?></span>
+								<?php else : ?>
+									<form method="post" style="margin:0">
+										<?php wp_nonce_field( 'veahealth_tg_add' ); ?>
+										<input type="hidden" name="veahealth_tg_add" value="<?php echo esc_attr( $id ); ?>">
+										<?php submit_button( __( 'Add', 'veahealth' ), 'secondary small', 'submit', false ); ?>
+									</form>
+								<?php endif; ?>
+							</td>
 						</tr>
 					<?php endforeach; ?>
 					</tbody>
