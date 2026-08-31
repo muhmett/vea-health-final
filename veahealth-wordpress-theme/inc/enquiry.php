@@ -135,6 +135,15 @@ function veahealth_handle_enquiry( WP_REST_Request $request ) {
 
 	update_post_meta( $post_id, '_vh_mailed', $sent ? 'yes' : 'no' );
 
+	/*
+	 * 3. Hand it to the CRM — queued, not called. The visitor already has their
+	 * lead stored and the coordinator already has the email; HubSpot being slow
+	 * or down must not delay this response or fail the submission.
+	 */
+	if ( function_exists( 'veahealth_hs_queue' ) ) {
+		veahealth_hs_queue( $post_id );
+	}
+
 	return new WP_REST_Response( array( 'ok' => true, 'mailed' => (bool) $sent ), 200 );
 }
 

@@ -21,6 +21,7 @@ require_once VEAHEALTH_DIR . '/inc/data.php';
 require_once VEAHEALTH_DIR . '/inc/template-tags.php';
 require_once VEAHEALTH_DIR . '/inc/schema.php';
 require_once VEAHEALTH_DIR . '/inc/enquiry.php';
+require_once VEAHEALTH_DIR . '/inc/hubspot.php';
 require_once VEAHEALTH_DIR . '/inc/content.php';
 require_once VEAHEALTH_DIR . '/inc/service-data.php';
 require_once VEAHEALTH_DIR . '/inc/service-parts.php';

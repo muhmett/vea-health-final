@@ -226,6 +226,52 @@ for. Reduced motion keeps the progress bar and the tracking, which are
 wayfinding, and drops the reveal. With no JavaScript the contents is still a
 working `<details>` fold and every word is on the page.
 
+### HubSpot
+
+Every enquiry the site takes is pushed into HubSpot: the person becomes a
+contact, and the message, the treatments and the page they enquired from become
+a note on their timeline. Optionally it also opens a deal, so leads land on a
+pipeline board rather than only in the contact list.
+
+**Connecting it.** Enquiries → HubSpot in the admin. In HubSpot go to Settings →
+Integrations → Private Apps, create an app with the `crm.objects.contacts.read`,
+`crm.objects.contacts.write` and (for deals) `crm.objects.deals.write` scopes,
+copy the token, paste it in and press **Test the connection** — you get a yes or
+no immediately rather than having to send a test enquiry.
+
+Better still, put it in `wp-config.php` and leave the field blank:
+
+```php
+define( 'VEAHEALTH_HUBSPOT_TOKEN', 'pat-eu1-…' );
+```
+
+The constant wins over the setting, and a secret in a file outside the database
+does not travel in every database backup.
+
+**Three rules the code holds to:**
+
+- **The lead is never lost.** The enquiry is stored and emailed before HubSpot is
+  contacted, and the push is queued rather than run inline — measured, a
+  submission returns in 86 ms having made zero outbound calls. HubSpot being
+  slow, rate-limited or down changes nothing the visitor sees.
+- **The token is never printed.** Not in a log, not in an error, not in the
+  admin. Transport errors are reduced to an error code before they are stored,
+  because a raw error string is exactly the sort of thing that ends up in a log
+  with a header in it.
+- **Failures are visible and retryable.** The Enquiries list has a HubSpot column
+  showing queued, retrying, failed or in-HubSpot with the reason, and a *Send
+  again* link. Silent failure on a lead pipeline is worse than no integration.
+
+Rate limits, 5xx and network errors are retried three times with a widening gap;
+a validation error is recorded and left alone because it will not fix itself. A
+returning enquirer is patched onto their existing contact rather than duplicated,
+and a blank field never overwrites a value they gave last time.
+
+**Privacy.** Sending an enquirer's details to HubSpot makes HubSpot a processor,
+which has to be disclosed. While a token is configured the theme adds that
+paragraph to the privacy policy automatically and removes it again if you
+disconnect, so the policy never names a company you are not using.
+
 ### The particle field
 
 A drifting field that answers the pointer, takes momentum from the scroll, and
