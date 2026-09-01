@@ -13,6 +13,7 @@ define( 'VEAHEALTH_VERSION', '1.3.0' );
 define( 'VEAHEALTH_DIR', get_template_directory() );
 define( 'VEAHEALTH_URI', get_template_directory_uri() );
 
+require_once VEAHEALTH_DIR . '/inc/i18n.php';
 require_once VEAHEALTH_DIR . '/inc/setup.php';
 require_once VEAHEALTH_DIR . '/inc/enqueue.php';
 require_once VEAHEALTH_DIR . '/inc/cpt.php';
