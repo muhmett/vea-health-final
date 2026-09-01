@@ -1,0 +1,57 @@
+/* Arabic.
+   The layout itself needs nothing here: every box-model and text-flow rule in
+   this theme uses logical properties, so `dir="rtl"` on <html> mirrors the page
+   on its own. What is left is the handful of things direction cannot decide —
+   which typeface renders Arabic, how much room those letterforms need, and the
+   few graphics that are physical rather than directional. */
+
+.lang-ar {
+  /* Plex Sans Arabic covers Arabic only; the Latin faces still render Latin,
+     which matters because treatment names, dosages and brand names stay in
+     Latin script inside Arabic sentences. Naming it first lets each script be
+     drawn by the face that has it.
+
+     The display serif has no Arabic at all, so headings fall to Plex too —
+     an Arabic heading in a Latin serif silently renders in a system fallback
+     and stops matching the rest of the page. */
+  --f-body:    "IBM Plex Sans Arabic", "Outfit", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --f-display: "IBM Plex Sans Arabic", "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --f-mono:    "IBM Plex Sans Arabic", "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* Arabic letterforms carry their weight below the baseline and stack marks
+   above it, so the same leading that reads as generous in Latin reads as
+   cramped here. */
+.lang-ar body,
+.lang-ar p,
+.lang-ar li { line-height: 1.85; }
+.lang-ar h1, .lang-ar h2, .lang-ar h3, .lang-ar h4 {
+  line-height: 1.32;
+  letter-spacing: 0;                /* tightening is a Latin habit; it damages Arabic joins */
+  font-weight: 600;                 /* the serif's 500 has no counterpart here */
+}
+
+/* Uppercasing and letter-spacing do nothing to Arabic but break its joins,
+   so the small-caps furniture reverts to plain text. */
+.lang-ar .eyebrow,
+.lang-ar .m-group,
+.lang-ar .brand-sub,
+.lang-ar .ba-label,
+.lang-ar .ba-hint { text-transform: none; letter-spacing: 0; }
+
+/* An arrow that means "onward" points the other way when reading runs the
+   other way. One that means "download" or "close" does not. */
+.dir-rtl .btn svg,
+.dir-rtl .more svg,
+.dir-rtl .crumbs svg { transform: scaleX(-1); }
+
+/* The before/after pair is a photograph, not a sentence: its two halves are
+   physically left and right whichever way the page is read, and its divider is
+   driven in pixels from the left edge. */
+.dir-rtl .ba { direction: ltr; }
+.dir-rtl .ba-caption { direction: rtl; text-align: start; }
+
+/* Latin runs inside Arabic — a URL, an email address, a phone number — need
+   their own direction or the punctuation lands at the wrong end. */
+.lang-ar .ltr,
+.lang-ar [dir="ltr"] { direction: ltr; unicode-bidi: isolate; }

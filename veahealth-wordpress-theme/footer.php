@@ -71,10 +71,10 @@
 				<h2><?php esc_html_e( 'Talk to a coordinator', 'veahealth' ); ?></h2>
 				<ul>
 					<?php if ( veahealth_option( 'email' ) ) : ?>
-						<li><a href="mailto:<?php echo esc_attr( veahealth_option( 'email' ) ); ?>"><?php echo esc_html( veahealth_option( 'email' ) ); ?></a></li>
+						<li><a href="mailto:<?php echo esc_attr( veahealth_option( 'email' ) ); ?>"><bdi dir="ltr"><?php echo esc_html( veahealth_option( 'email' ) ); ?></bdi></a></li>
 					<?php endif; ?>
 					<?php if ( veahealth_option( 'phone' ) ) : ?>
-						<li><a href="tel:<?php echo esc_attr( preg_replace( '/[^\d+]/', '', veahealth_option( 'phone' ) ) ); ?>"><?php echo esc_html( veahealth_option( 'phone' ) ); ?></a></li>
+						<li><a href="tel:<?php echo esc_attr( preg_replace( '/[^\d+]/', '', veahealth_option( 'phone' ) ) ); ?>"><bdi dir="ltr"><?php echo esc_html( veahealth_option( 'phone' ) ); ?></bdi></a></li>
 					<?php endif; ?>
 					<?php if ( veahealth_whatsapp_url() ) : ?>
 						<li><a href="<?php echo esc_url( veahealth_whatsapp_url() ); ?>" rel="noopener"><?php esc_html_e( 'WhatsApp, 7/24', 'veahealth' ); ?></a></li>

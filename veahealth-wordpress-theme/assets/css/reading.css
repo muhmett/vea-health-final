@@ -109,7 +109,7 @@
    -------------------------------------------------------------------------- */
 .post-key{
   border: 1px solid var(--read-line);
-  border-left: 3px solid var(--read-mark);
+  border-inline-start: 3px solid var(--read-mark);
   border-radius: 0 var(--r-lg) var(--r-lg) 0;
   padding: 22px 26px;
   margin-bottom: clamp(24px, 4vw, 40px);
@@ -126,7 +126,7 @@
 .post-key ul{ list-style: none; padding: 0; margin: 0; }
 .post-key li{
   position: relative;
-  padding-left: 26px;
+  padding-inline-start: 26px;
   margin-top: .55em;
   color: var(--read-ink);
   font-size: .98rem;
@@ -135,7 +135,7 @@
 .post-key li:first-child{ margin-top: 0; }
 .post-key li::before{
   content: "";
-  position: absolute; left: 4px; top: .62em;
+  position: absolute; inset-inline-start: 4px; top: .62em;
   width: 8px; height: 8px;
   border-radius: 2px;
   background: var(--read-mark);
@@ -193,13 +193,13 @@
   color: var(--ink-3);
   margin-bottom: 12px;
 }
-.post-toc ol{ list-style: none; padding: 0; margin: 0; border-left: 1px solid var(--line); }
+.post-toc ol{ list-style: none; padding: 0; margin: 0; border-inline-start: 1px solid var(--line); }
 .post-toc li{ margin: 0; }
 .post-toc a{
   display: block;
   padding: 8px 0 8px 15px;
-  margin-left: -1px;
-  border-left: 2px solid transparent;
+  margin-inline-start: -1px;
+  border-inline-start: 2px solid transparent;
   font-size: .86rem;
   line-height: 1.4;
   color: var(--ink-3);
@@ -207,7 +207,7 @@
   transition: color .25s var(--ease), border-color .25s var(--ease);
 }
 .post-toc a:hover{ color: var(--ink); }
-.post-toc a.is-current{ color: var(--ink); border-left-color: var(--teal); font-weight: 500; }
+.post-toc a.is-current{ color: var(--ink); border-inline-start-color: var(--teal); font-weight: 500; }
 
 /* on a phone it folds away, so it never eats the first screen */
 @media (max-width: 999px){
@@ -236,14 +236,14 @@
   .post-toc > summary::after{
     content: "";
     width: 8px; height: 8px;
-    border-right: 1.5px solid currentColor;
+    border-right: 1.5px solid currentColor;   /* drawn glyph, not layout: stays physical */
     border-bottom: 1.5px solid currentColor;
     transform: rotate(45deg) translateY(-2px);
     transition: transform .3s var(--ease-out);
   }
   .post-toc[open] > summary::after{ transform: rotate(-135deg) translateY(-2px); }
-  .post-toc ol{ padding: 0 18px 14px; border-left: 0; }
-  .post-toc a{ padding: 7px 0; border-left: 0; }
+  .post-toc ol{ padding: 0 18px 14px; border-inline-start: 0; }
+  .post-toc a{ padding: 7px 0; border-inline-start: 0; }
   .post-toc a.is-current{ color: var(--teal); }
 }
 
@@ -273,7 +273,7 @@
    6. Blocks inside the article, restyled for the reading surface
    -------------------------------------------------------------------------- */
 .post-note{
-  border-left: 3px solid var(--read-mark);
+  border-inline-start: 3px solid var(--read-mark);
   background: color-mix(in srgb, var(--read-mark) 7%, transparent);
   border-radius: 0 var(--r) var(--r) 0;
   padding: 18px 22px;

@@ -27,12 +27,12 @@
 			<span class="tb-item"><?php echo veahealth_icon( 'pin' ); ?> <?php echo esc_html( veahealth_option( 'city' ) ); ?>, <?php esc_html_e( 'Türkiye', 'veahealth' ); ?></span>
 			<?php if ( veahealth_option( 'email' ) ) : ?>
 				<a class="tb-item" href="mailto:<?php echo esc_attr( veahealth_option( 'email' ) ); ?>">
-					<?php echo veahealth_icon( 'mail' ); ?> <?php echo esc_html( veahealth_option( 'email' ) ); ?>
+					<?php echo veahealth_icon( 'mail' ); ?> <bdi dir="ltr"><?php echo esc_html( veahealth_option( 'email' ) ); ?></bdi>
 				</a>
 			<?php endif; ?>
 			<?php if ( veahealth_option( 'phone' ) ) : ?>
 				<a class="tb-item" href="tel:<?php echo esc_attr( preg_replace( '/[^\d+]/', '', veahealth_option( 'phone' ) ) ); ?>">
-					<?php echo veahealth_icon( 'phone' ); ?> <?php echo esc_html( veahealth_option( 'phone' ) ); ?>
+					<?php echo veahealth_icon( 'phone' ); ?> <bdi dir="ltr"><?php echo esc_html( veahealth_option( 'phone' ) ); ?></bdi>
 				</a>
 			<?php endif; ?>
 			<?php if ( veahealth_whatsapp_url() ) : ?>
@@ -47,6 +47,7 @@
 		<div class="shell">
 			<?php echo veahealth_brand(); ?>
 			<?php veahealth_primary_nav(); ?>
+			<?php echo veahealth_lang_switcher(); ?>
 			<a class="btn btn--primary nav-cta magnet" href="<?php echo esc_url( veahealth_contact_url() ); ?>">
 				<?php esc_html_e( 'Free assessment', 'veahealth' ); ?>
 			</a>
@@ -83,6 +84,7 @@
 	<a class="btn btn--primary btn--block mt-24" href="<?php echo esc_url( veahealth_contact_url() ); ?>">
 		<?php esc_html_e( 'Free assessment', 'veahealth' ); ?>
 	</a>
+	<?php echo veahealth_lang_switcher(); ?>
 </nav>
 
 <?php
@@ -137,10 +139,10 @@ $vh_preview = array(
 		<div>
 			<h3><?php esc_html_e( 'Talk to a coordinator', 'veahealth' ); ?></h3>
 			<?php if ( veahealth_option( 'email' ) ) : ?>
-				<p><a href="mailto:<?php echo esc_attr( veahealth_option( 'email' ) ); ?>"><?php echo esc_html( veahealth_option( 'email' ) ); ?></a></p>
+				<p><a href="mailto:<?php echo esc_attr( veahealth_option( 'email' ) ); ?>"><bdi dir="ltr"><?php echo esc_html( veahealth_option( 'email' ) ); ?></bdi></a></p>
 			<?php endif; ?>
 			<?php if ( veahealth_option( 'phone' ) ) : ?>
-				<p><a href="tel:<?php echo esc_attr( preg_replace( '/[^\d+]/', '', veahealth_option( 'phone' ) ) ); ?>"><?php echo esc_html( veahealth_option( 'phone' ) ); ?></a></p>
+				<p><a href="tel:<?php echo esc_attr( preg_replace( '/[^\d+]/', '', veahealth_option( 'phone' ) ) ); ?>"><bdi dir="ltr"><?php echo esc_html( veahealth_option( 'phone' ) ); ?></bdi></a></p>
 			<?php endif; ?>
 		</div>
 		<div>

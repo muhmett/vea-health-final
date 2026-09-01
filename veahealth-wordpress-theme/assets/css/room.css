@@ -24,7 +24,7 @@
   border: 1px solid var(--line);
   box-shadow: var(--sh-1);
   cursor: pointer;
-  text-align: left;
+  text-align:start;
   transition: border-color .3s var(--ease), transform .3s var(--ease-out), box-shadow .3s var(--ease);
 }
 .room-open:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: var(--sh-2, var(--sh-1)); }
@@ -166,7 +166,7 @@ body.room-is-open { overflow: hidden; }
 
 .room-note__blob {
   position: absolute;
-  left: 7px; top: 50%;
+  inset-inline-start: 7px; top: 50%;
   width: 30px; height: 30px;
   margin-top: -15px;
   border-radius: 50%;
@@ -242,7 +242,7 @@ body.room-is-open { overflow: hidden; }
 }
 .room-note__facts > div:first-child { border-top: 0; }
 .room-note__facts dt { font-size: .82rem; color: rgba(233,246,245,.58); }
-.room-note__facts dd { font-size: .86rem; color: #fff; text-align: right; font-weight: 500; }
+.room-note__facts dd { font-size: .86rem; color: #fff; text-align:end; font-weight: 500; }
 
 .room-note__source {
   margin-top: 14px;

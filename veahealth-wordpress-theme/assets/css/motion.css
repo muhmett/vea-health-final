@@ -174,7 +174,7 @@
   display: none;
   align-items: center;
   gap: 10px;
-  margin-left: 12px;
+  margin-inline-start: 12px;
   padding: 10px 4px;
   font-family: var(--f-mono);
   font-size: .68rem;
@@ -247,7 +247,7 @@
 .vh-menu__item > a:focus-visible { color: var(--teal-bright); }
 
 .vh-menu__meta {
-  border-left: 1px solid var(--deep-line);
+  border-inline-start: 1px solid var(--deep-line);
   padding: clamp(90px, 12vh, 150px) clamp(24px, 4vw, 56px) 48px;
   align-self: center;
   display: flex;

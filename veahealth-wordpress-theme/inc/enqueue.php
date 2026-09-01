@@ -42,6 +42,16 @@ function veahealth_assets() {
 	wp_enqueue_style( 'veahealth', VEAHEALTH_URI . '/assets/css/site.css', array( 'veahealth-fonts' ), veahealth_asset_version( '/assets/css/site.css' ) );
 
 	/*
+	 * Arabic only. The mirroring itself is done by dir="rtl" against logical
+	 * properties, so this carries just the typeface and the few graphics that
+	 * are physical rather than directional — which keeps it small enough that
+	 * no other language pays for it.
+	 */
+	if ( function_exists( 'veahealth_lang' ) && 'ar' === veahealth_lang() ) {
+		wp_enqueue_style( 'veahealth-rtl', VEAHEALTH_URI . '/assets/css/rtl.css', array( 'veahealth' ), veahealth_asset_version( '/assets/css/rtl.css' ) );
+	}
+
+	/*
 	 * Treatment pages used to load a stylesheet of their own — one per
 	 * treatment, 384 KB across sixteen files, because each page had been
 	 * pasted into the old site as a complete HTML document. They now render
@@ -112,10 +122,23 @@ add_action( 'wp_enqueue_scripts', 'veahealth_assets' );
  * swap after the page appears.
  */
 function veahealth_preload_fonts() {
-	$fonts = array(
-		'/assets/fonts/outfit-variable-latin.woff2',
-		'/assets/fonts/cormorantgaramond-variable-latin.woff2',
-	);
+	/*
+	 * Preload what this page will actually draw with. An Arabic page renders
+	 * almost none of its text in the Latin faces, and a Latin page renders none
+	 * of it in the Arabic one — preloading both would make every visitor wait
+	 * on 40 KB they were never going to see.
+	 */
+	if ( function_exists( 'veahealth_lang' ) && 'ar' === veahealth_lang() ) {
+		$fonts = array(
+			'/assets/fonts/ibmplexsansarabic-400-normal-arabic.woff2',
+			'/assets/fonts/ibmplexsansarabic-600-normal-arabic.woff2',
+		);
+	} else {
+		$fonts = array(
+			'/assets/fonts/outfit-variable-latin.woff2',
+			'/assets/fonts/cormorantgaramond-variable-latin.woff2',
+		);
+	}
 	foreach ( $fonts as $f ) {
 		printf(
 			'<link rel="preload" as="font" type="font/woff2" href="%s" crossorigin>' . "\n",
