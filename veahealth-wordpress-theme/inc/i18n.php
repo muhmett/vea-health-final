@@ -620,7 +620,14 @@ function veahealth_lang_sync_pages() {
 					'post_title'   => $t['title'],
 					'post_name'    => $t['slug'],
 					'post_excerpt' => $t['excerpt'],
-					'post_content' => $source->post_content,
+					/*
+					 * Most of these pages carry no body of their own — their
+					 * prose is in the template and is translated through
+					 * gettext, so copying the English body copies nothing but
+					 * the wrapper. The legal pages are the exception: their
+					 * text is stored, so a translation has to supply it.
+					 */
+					'post_content' => isset( $t['content'] ) ? $t['content'] : $source->post_content,
 					'menu_order'   => $source->menu_order,
 					'meta_input'   => array(
 						VEAHEALTH_LANG_META  => $lang,
@@ -693,6 +700,22 @@ function veahealth_lang_menu_links( $items ) {
 			$id = veahealth_post_in( (int) $item->object_id, $lang );
 			if ( $id ) {
 				$item->url = get_permalink( $id );
+
+				/*
+				 * Take the label from the translated page too. Most menu
+				 * labels are short interface words that the catalogue already
+				 * carries, which is why the navigation looked translated — but
+				 * "Privacy policy" is a page title, not interface, and the
+				 * legal row stayed in English while pointing at Arabic pages.
+				 *
+				 * Only where the label is still the page's own title: a label
+				 * an editor typed is their words, and a translation of a page
+				 * has no claim on it.
+				 */
+				$source = get_post( (int) $item->object_id );
+				if ( $source && $item->title === $source->post_title ) {
+					$item->title = get_the_title( $id );
+				}
 			}
 			continue;
 		}

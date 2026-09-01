@@ -126,6 +126,63 @@
 	</div>
 </footer>
 
+<?php
+/*
+ * The floating WhatsApp button.
+ *
+ * Like the cookie notice, it was styled and scripted but never rendered —
+ * site.js reveals it past 420px of scroll and the CSS parks it in the corner,
+ * and neither had anything to act on. On a site where WhatsApp is the channel
+ * patients actually use, that is the button missing from every page.
+ *
+ * The label is hidden below 520px, so the accessible name has to come from the
+ * element itself rather than from the text inside it.
+ */
+if ( veahealth_whatsapp_url() ) :
+	?>
+	<a class="wa-float" href="<?php echo esc_url( veahealth_whatsapp_url() ); ?>" rel="noopener" aria-label="<?php esc_attr_e( 'WhatsApp us', 'veahealth' ); ?>">
+		<?php echo veahealth_icon( 'wa' ); ?>
+		<span><?php esc_html_e( 'WhatsApp us', 'veahealth' ); ?></span>
+	</a>
+	<?php
+endif;
+?>
+
+<?php
+/*
+ * The cookie notice.
+ *
+ * The consent script and its styles were already in the theme; the markup
+ * they act on was not, so the banner never appeared and the cookie policy
+ * described a choice no visitor had been offered. It failed safe either way —
+ * with no stored answer and no banner, site.js loads no analytics at all —
+ * but a policy that promises a banner has to be true.
+ *
+ * The two button labels are quoted word for word on the cookie policy page.
+ * Reword either one and it has to be reworded there too, in every language.
+ */
+$vh_cookie_page = get_page_by_path( 'cookie-policy' );
+if ( $vh_cookie_page && function_exists( 'veahealth_post_in' ) ) {
+	$vh_tr = veahealth_post_in( $vh_cookie_page->ID, veahealth_lang() );
+	if ( $vh_tr ) {
+		$vh_cookie_page = get_post( $vh_tr );
+	}
+}
+?>
+<aside class="cookie" role="region" aria-label="<?php esc_attr_e( 'Cookie choices', 'veahealth' ); ?>">
+	<h3><?php esc_html_e( 'Cookies', 'veahealth' ); ?></h3>
+	<p>
+		<?php esc_html_e( 'We store one value to remember this choice. Analytics load only if you accept, and never for advertising.', 'veahealth' ); ?>
+		<?php if ( $vh_cookie_page ) : ?>
+			<a href="<?php echo esc_url( get_permalink( $vh_cookie_page ) ); ?>"><?php esc_html_e( 'Read the cookie policy', 'veahealth' ); ?></a>
+		<?php endif; ?>
+	</p>
+	<div class="cookie-actions">
+		<button type="button" class="btn btn--primary" data-consent="all"><?php esc_html_e( 'Accept analytics', 'veahealth' ); ?></button>
+		<button type="button" class="btn btn--ghost" data-consent="necessary"><?php esc_html_e( 'Essential only', 'veahealth' ); ?></button>
+	</div>
+</aside>
+
 <?php wp_footer(); ?>
 </body>
 </html>

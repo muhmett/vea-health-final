@@ -396,15 +396,23 @@
     if (state === 'necessary') return;
     if (!banner) return;
 
-    window.setTimeout(function () { banner.classList.add('is-in'); }, 900);
+    /* The banner is pinned to the bottom of the screen and the floating
+       WhatsApp button lives in the same corner, so on a phone the banner
+       buries it. Flagging the state on <html> lets the button hold its
+       off-screen position until the visitor has answered — the same class of
+       fix, and the same mechanism, as the open mobile menu. */
+    function show() { banner.classList.add('is-in'); root.classList.add('cookie-open'); }
+    function dismiss() { banner.classList.remove('is-in'); root.classList.remove('cookie-open'); }
+
+    window.setTimeout(show, 900);
 
     var accept = $('[data-consent="all"]', banner);
     var reject = $('[data-consent="necessary"]', banner);
     if (accept) accept.addEventListener('click', function () {
-      writeConsent('all'); banner.classList.remove('is-in'); loadAnalytics();
+      writeConsent('all'); dismiss(); loadAnalytics();
     });
     if (reject) reject.addEventListener('click', function () {
-      writeConsent('necessary'); banner.classList.remove('is-in');
+      writeConsent('necessary'); dismiss();
     });
   }
 

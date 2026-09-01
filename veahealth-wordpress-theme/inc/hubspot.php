@@ -595,7 +595,24 @@ function veahealth_hs_privacy_note( $content ) {
 		return $content;
 	}
 	$page = get_post();
-	if ( ! $page || 'privacy-policy' !== $page->post_name ) {
+	if ( ! $page ) {
+		return $content;
+	}
+
+	/*
+	 * Matching on the slug alone found the English policy and nothing else —
+	 * every translation has a slug of its own, and the disclosure has to be on
+	 * the page the visitor is actually reading. Ask the translation layer
+	 * instead, and fall back to the slug where it is not loaded.
+	 */
+	$is_policy = 'privacy-policy' === $page->post_name;
+	if ( ! $is_policy && function_exists( 'veahealth_post_in' ) ) {
+		$en = get_page_by_path( 'privacy-policy' );
+		if ( $en && function_exists( 'veahealth_lang' ) ) {
+			$is_policy = veahealth_post_in( $en->ID, veahealth_lang() ) === $page->ID;
+		}
+	}
+	if ( ! $is_policy ) {
 		return $content;
 	}
 
@@ -605,11 +622,16 @@ function veahealth_hs_privacy_note( $content ) {
 	) . '</p>';
 
 	/*
-	 * Insert it at the end of the sharing section where it belongs. If that
-	 * heading has been renamed by an editor the paragraph goes to the end of
-	 * the page instead — misplaced is recoverable, missing is not.
+	 * Insert it at the end of the sharing section where it belongs. The
+	 * heading is marked data-vh="share" in every language, because matching on
+	 * the English words found nothing on a translated page and quietly put the
+	 * disclosure at the bottom. The English wording is still tried after it,
+	 * for a policy written before the marker existed. If neither matches, the
+	 * paragraph goes to the end of the page — misplaced is recoverable,
+	 * missing is not.
 	 */
-	if ( preg_match( '#(<h2[^>]*>\s*Who we share it with\s*</h2>.*?)(<h2)#is', $content, $m ) ) {
+	if ( preg_match( '#(<h2[^>]*data-vh="share"[^>]*>.*?)(<h2)#is', $content, $m )
+		|| preg_match( '#(<h2[^>]*>\s*Who we share it with\s*</h2>.*?)(<h2)#is', $content, $m ) ) {
 		return str_replace( $m[0], $m[1] . $note . $m[2], $content );
 	}
 	return $content . $note;
