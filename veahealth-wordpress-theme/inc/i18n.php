@@ -554,6 +554,98 @@ function veahealth_lang_guard_singular() {
 add_action( 'template_redirect', 'veahealth_lang_guard_singular', 9 );
 
 /* ==========================================================================
+   Creating the translated pages
+   ========================================================================== */
+
+/**
+ * The translation of a post in one language, if it exists.
+ *
+ * @param int    $post_id Any post in the group.
+ * @param string $lang    Language wanted.
+ * @return int Post id, or 0.
+ */
+function veahealth_post_in( $post_id, $lang ) {
+	$found = veahealth_post_translations( $post_id );
+	return isset( $found[ $lang ] ) ? (int) $found[ $lang ] : 0;
+}
+
+/**
+ * Create or update the company pages in every language.
+ *
+ * Idempotent, and matched on the translation group rather than the slug: run
+ * it twice and it edits rather than duplicates, and an editor who renames a
+ * translated page keeps their title instead of having it overwritten on the
+ * next import.
+ *
+ * @return int How many pages were created.
+ */
+function veahealth_lang_sync_pages() {
+	if ( ! function_exists( 'veahealth_pages_i18n' ) ) {
+		return 0;
+	}
+	$made = 0;
+
+	foreach ( veahealth_pages_i18n() as $slug => $langs ) {
+		$source = get_page_by_path( $slug );
+		if ( ! $source ) {
+			continue;
+		}
+		$group = (string) $source->ID;
+		update_post_meta( $source->ID, VEAHEALTH_GROUP_META, $group );
+
+		foreach ( $langs as $lang => $t ) {
+			$existing = get_posts(
+				array(
+					'post_type'        => 'page',
+					'post_status'      => 'any',
+					'posts_per_page'   => 1,
+					'no_found_rows'    => true,
+					'suppress_filters' => false,
+					'lang'             => 'any',
+					'meta_query'       => array(
+						'relation' => 'AND',
+						array( 'key' => VEAHEALTH_GROUP_META, 'value' => $group ),
+						array( 'key' => VEAHEALTH_LANG_META, 'value' => $lang ),
+					),
+				)
+			);
+			if ( $existing ) {
+				continue;                    // already there; leave the editor's copy alone
+			}
+
+			$id = wp_insert_post(
+				array(
+					'post_type'    => 'page',
+					'post_status'  => 'publish',
+					'post_title'   => $t['title'],
+					'post_name'    => $t['slug'],
+					'post_excerpt' => $t['excerpt'],
+					'post_content' => $source->post_content,
+					'menu_order'   => $source->menu_order,
+					'meta_input'   => array(
+						VEAHEALTH_LANG_META  => $lang,
+						VEAHEALTH_GROUP_META => $group,
+					),
+				),
+				true
+			);
+			if ( is_wp_error( $id ) ) {
+				continue;
+			}
+
+			// The template is what makes the page render at all — a translated
+			// About with no template is a blank page, not a translated one.
+			$tpl = get_page_template_slug( $source );
+			if ( $tpl ) {
+				update_post_meta( $id, '_wp_page_template', $tpl );
+			}
+			++$made;
+		}
+	}
+	return $made;
+}
+
+/* ==========================================================================
    Content that is stored, not written in the templates
    ========================================================================== */
 
@@ -579,6 +671,71 @@ function veahealth_lang_menu_title( $title ) {
 }
 add_filter( 'nav_menu_item_title', 'veahealth_lang_menu_title' );
 add_filter( 'the_title', 'veahealth_lang_menu_title' );
+
+/**
+ * Point each menu item at the page in the language being read.
+ *
+ * Translating the label alone gets you an Arabic word linking to an English
+ * page — which then does not even redirect, because an English page under an
+ * English URL is perfectly correct. The link has to move too.
+ *
+ * An item with no translation keeps its own URL rather than being dropped: a
+ * visitor following it lands on a real page in another language, which is a
+ * better outcome than a menu with holes in it.
+ */
+function veahealth_lang_menu_links( $items ) {
+	$lang = veahealth_lang();
+	if ( veahealth_lang_default() === $lang ) {
+		return $items;
+	}
+	foreach ( $items as $item ) {
+		if ( 'post_type' === $item->type && ! empty( $item->object_id ) ) {
+			$id = veahealth_post_in( (int) $item->object_id, $lang );
+			if ( $id ) {
+				$item->url = get_permalink( $id );
+			}
+			continue;
+		}
+		/*
+		 * Home and the treatments archive are custom links, not pages, so the
+		 * lookup above never sees them and they were the two items still
+		 * pointing at English. They have no translation to find — they only
+		 * need the prefix, and an address that is not ours comes back
+		 * untouched.
+		 */
+		if ( ! empty( $item->url ) ) {
+			$item->url = veahealth_lang_url( $item->url, $lang );
+		}
+	}
+	return $items;
+}
+add_filter( 'wp_nav_menu_objects', 'veahealth_lang_menu_links' );
+
+/**
+ * Serve each language its own front page.
+ *
+ * WordPress resolves the front page from one stored id, so without this every
+ * language would render the English home page's title and description — which
+ * is what search engines read.
+ */
+function veahealth_lang_front_page( $id ) {
+	/*
+	 * Guarded against itself. Finding the translation runs a query, a query
+	 * reads page_on_front, and reading it calls this filter again — which is
+	 * an infinite loop, and one that shows up as a request that never returns
+	 * rather than as an error anybody can read.
+	 */
+	static $busy = false;
+	if ( $busy || is_admin() || ! $id || veahealth_lang_default() === veahealth_lang() ) {
+		return $id;
+	}
+	$busy = true;
+	$tr   = veahealth_post_in( (int) $id, veahealth_lang() );
+	$busy = false;
+
+	return $tr ? $tr : $id;
+}
+add_filter( 'option_page_on_front', 'veahealth_lang_front_page' );
 
 /**
  * Translate a Customizer value the clinic has not overridden.

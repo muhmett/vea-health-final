@@ -284,6 +284,19 @@ function veahealth_install_run( $overwrite = false ) {
 	}
 	$log[] = sprintf( __( 'Pages ready: %d.', 'veahealth' ), count( $pages ) );
 
+	/*
+	 * The same pages in the other three languages. Run after the English ones
+	 * exist, because each translation is created against its source page's id
+	 * — that id is the group the whole set is found by.
+	 */
+	if ( function_exists( 'veahealth_lang_sync_pages' ) ) {
+		$made = veahealth_lang_sync_pages();
+		if ( $made ) {
+			/* translators: %d: number of translated pages created. */
+			$log[] = sprintf( __( 'Translated pages created: %d.', 'veahealth' ), $made );
+		}
+	}
+
 	if ( isset( $pages['privacy-policy'] ) ) {
 		veahealth_register_privacy_page( $pages['privacy-policy'] );
 	}
