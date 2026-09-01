@@ -16,8 +16,21 @@ while ( have_posts() ) :
 	);
 endwhile;
 
+/*
+ * Everything from the first stage to the aftercare is one scope: the lift
+ * reads its floors out of it, so a stage added or removed moves the car
+ * without anything here needing to be told.
+ */
+$stages = veahealth_journey();
+?>
+<div class="lift-scope" data-lift-scope>
+	<div class="lift-rail" aria-hidden="true">
+		<canvas data-lift></canvas>
+	</div>
+	<div class="lift-track">
+<?php
 $i = 0;
-foreach ( veahealth_journey() as $j ) :
+foreach ( $stages as $j ) :
 	$media = sprintf(
 		'<div class="media-frame ratio-16-9" data-anim="scale"><img src="%s" alt="%s" width="900" height="506" loading="lazy" decoding="async"></div>',
 		esc_url( VEAHEALTH_URI . '/assets/img/art/' . $j['img'] . '-900.webp' ),
@@ -38,7 +51,7 @@ foreach ( veahealth_journey() as $j ) :
 	<?php
 	$text = ob_get_clean();
 	?>
-	<section class="section<?php echo ( $i % 2 ) ? ' section--tint' : ''; ?>">
+	<section class="section<?php echo ( $i % 2 ) ? ' section--tint' : ''; ?>" data-lift-stop>
 		<div class="shell">
 			<div class="grid g-2" style="align-items:center;gap:clamp(28px,5vw,64px)">
 				<?php echo ( 0 === $i % 2 ) ? $text . $media : $media . $text; ?>
@@ -50,7 +63,7 @@ foreach ( veahealth_journey() as $j ) :
 endforeach;
 ?>
 
-<section class="section">
+<section class="section" data-lift-stop>
 	<div class="shell shell-narrow">
 		<h2 data-anim="up"><?php esc_html_e( 'After you fly home', 'veahealth' ); ?></h2>
 		<p class="lede mt-24" data-anim="up">
@@ -64,6 +77,9 @@ endforeach;
 		</ul>
 	</div>
 </section>
+
+	</div>
+</div>
 
 <?php
 veahealth_cta_band(

@@ -47,6 +47,12 @@ function veahealth_assets() {
 	 * are physical rather than directional — which keeps it small enough that
 	 * no other language pays for it.
 	 */
+	// The journey lift, on the one template that has floors to stop at.
+	if ( is_page_template( 'page-templates/journey.php' ) ) {
+		wp_enqueue_style( 'veahealth-lift', VEAHEALTH_URI . '/assets/css/lift.css', array( 'veahealth' ), veahealth_asset_version( '/assets/css/lift.css' ) );
+		wp_enqueue_script( 'veahealth-lift', VEAHEALTH_URI . '/assets/js/lift.js', array(), veahealth_asset_version( '/assets/js/lift.js' ), true );
+	}
+
 	if ( function_exists( 'veahealth_lang' ) && 'ar' === veahealth_lang() ) {
 		wp_enqueue_style( 'veahealth-rtl', VEAHEALTH_URI . '/assets/css/rtl.css', array( 'veahealth' ), veahealth_asset_version( '/assets/css/rtl.css' ) );
 	}

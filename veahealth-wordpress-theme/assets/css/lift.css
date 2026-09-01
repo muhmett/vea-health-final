@@ -1,0 +1,60 @@
+/* The journey lift.
+   A rail beside the stages, sticky so the car stays in view while the text
+   scrolls past it. The canvas carries its own colours as custom properties so
+   the drawing follows the theme without JavaScript reading the palette. */
+
+.lift-scope{
+  --lift-ink: var(--teal);
+  --lift-dim: color-mix(in srgb, var(--teal) 42%, transparent);
+  position: relative;
+}
+
+.lift-rail{
+  position: sticky;
+  top: calc(var(--header-h, 88px) + 24px);
+  height: min(58vh, 420px);
+  width: 100%;
+  pointer-events: none;
+}
+.lift-rail canvas{ display:block; width:100%; height:100%; }
+
+/* There were floor numbers down the rail. They went: the stage headings beside
+   them — DAY ONE, THROUGHOUT YOUR STAY — already say which floor this is, and
+   a column of stray digits next to them was decoration pretending to be
+   information. */
+
+@media (min-width: 1000px){
+  .lift-scope{
+    display:grid;
+    grid-template-columns: 200px minmax(0,1fr);
+    gap: clamp(20px, 3vw, 44px);
+    align-items:start;
+  }
+  .lift-rail{ height: min(64vh, 520px); }
+}
+
+/* Below that the rail would eat a column the content needs, so it becomes a
+   slim strip pinned to the reading edge and the sections run full width. */
+@media (max-width: 999.98px){
+  .lift-rail{
+    position: fixed;
+    inset-inline-start: 6px;
+    top: 50%; transform: translateY(-50%);
+    width: 68px; height: min(44vh, 280px);
+    z-index: 4;
+    opacity:.9;
+  }
+  /*
+   * The strip gets a lane of its own. Floating it over the column was the one
+   * thing this effect must not do — it was sitting across a line of text — and
+   * the inset goes on the inner column rather than the section, so a tinted
+   * band still reaches both edges of the screen.
+   */
+  .lift-scope .shell{ padding-inline-start: 78px; }
+}
+
+/* Nothing moves for a reader who asked for nothing to move, and the script
+   bows out too — so the strip would be an empty box. Remove it. */
+@media (prefers-reduced-motion: reduce){
+  .lift-rail{ display:none; }
+}
