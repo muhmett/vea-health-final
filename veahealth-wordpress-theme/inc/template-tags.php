@@ -269,32 +269,83 @@ function veahealth_service_image( $post_id, $size = '800' ) {
 }
 
 /**
- * A drag-to-compare before/after figure.
+ * A before/after figure the visitor uncovers themselves.
  *
- * Built on a real range input so it is operable with a keyboard and announced
- * to screen readers without any extra ARIA plumbing.
+ * The two photographs are registered onto each other beforehand — same scale,
+ * same position, cropped to the same frame — so that moving between them reads
+ * as one face changing rather than two photographs swapping. Unregistered, the
+ * head jumps and the collar changes, and the eye reads that as a cut: exactly
+ * what a result photograph must never look like.
+ *
+ * Two ways in, one state underneath. A mouse gets a lens that follows the
+ * pointer, because the interesting part is the mouth and a lens lets you put it
+ * there. A finger gets the divider, because hover does not exist on a phone.
+ * Underneath both is a real range input, so it is operable from the keyboard
+ * and announced to screen readers with no extra ARIA.
+ *
+ * Nothing here is generated or retouched. These are the clinic's own patient
+ * photographs, split and aligned, and never anything else.
  */
 function veahealth_before_after( $result ) {
-	$base = VEAHEALTH_URI . '/assets/img/results/' . $result['img'];
-	if ( ! empty( $result['attachment'] ) ) {
-		$src = wp_get_attachment_image_url( $result['attachment'], 'veahealth-result' );
-		if ( $src ) {
-			$base = preg_replace( '/\.(webp|jpg|jpeg|png)$/i', '', $src );
-		}
+	$dir  = VEAHEALTH_DIR . '/assets/img/reveal/';
+	$uri  = VEAHEALTH_URI . '/assets/img/reveal/';
+	$slug = $result['img'];
+
+	// A case whose pair has not been aligned still appears, as the original
+	// side-by-side photograph — missing is worse than merely less clever.
+	if ( ! file_exists( $dir . $slug . '-before-546.webp' ) || ! file_exists( $dir . $slug . '-after-546.webp' ) ) {
+		veahealth_before_after_plain( $result );
+		return;
 	}
+
+	$before   = $uri . $slug . '-before-546.webp';
+	$after    = $uri . $slug . '-after-546.webp';
+	$before_s = $uri . $slug . '-before-273.webp';
+	$after_s  = $uri . $slug . '-after-273.webp';
 	?>
 	<figure data-anim="up">
-		<div class="ba" role="group" aria-label="<?php echo esc_attr( sprintf( __( 'Before and after: %s', 'veahealth' ), $result['title'] ) ); ?>">
-			<img class="ba-img" src="<?php echo esc_url( $base . '-900.webp' ); ?>"
-			     srcset="<?php echo esc_attr( $base . '-500.webp 500w, ' . $base . '-900.webp 900w, ' . $base . '.webp 1600w' ); ?>"
-			     sizes="(min-width: 900px) 50vw, 100vw"
+		<div class="ba" data-ba role="group"
+		     aria-label="<?php echo esc_attr( sprintf( __( 'Before and after: %s', 'veahealth' ), $result['title'] ) ); ?>">
+			<img class="ba-img" src="<?php echo esc_url( $before ); ?>"
+			     srcset="<?php echo esc_attr( $before_s . ' 273w, ' . $before . ' 546w' ); ?>"
+			     sizes="(min-width: 900px) 50vw, 100vw" width="546" height="682"
 			     alt="<?php echo esc_attr( $result['alt'] ); ?>" loading="lazy" decoding="async">
 			<div class="ba-top">
-				<img src="<?php echo esc_url( $base . '-900.webp' ); ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+				<img src="<?php echo esc_url( $after ); ?>"
+				     srcset="<?php echo esc_attr( $after_s . ' 273w, ' . $after . ' 546w' ); ?>"
+				     sizes="(min-width: 900px) 50vw, 100vw" width="546" height="682"
+				     alt="" aria-hidden="true" loading="lazy" decoding="async">
 			</div>
 			<input class="ba-range" type="range" min="0" max="100" value="50" step="0.1"
-			       aria-label="<?php echo esc_attr( sprintf( __( 'Reveal the before image for %s', 'veahealth' ), $result['title'] ) ); ?>">
+			       aria-label="<?php echo esc_attr( sprintf( __( 'Reveal the result for %s', 'veahealth' ), $result['title'] ) ); ?>">
 			<div class="ba-handle" aria-hidden="true"><span class="ba-knob"><?php echo veahealth_icon( 'compare' ); ?></span></div>
+			<span class="ba-label ba-label--l"><?php esc_html_e( 'Before', 'veahealth' ); ?></span>
+			<span class="ba-label ba-label--r"><?php esc_html_e( 'After', 'veahealth' ); ?></span>
+			<span class="ba-hint" aria-hidden="true"><?php esc_html_e( 'Move across the smile', 'veahealth' ); ?></span>
+		</div>
+		<figcaption class="ba-caption">
+			<b><?php echo esc_html( $result['title'] ); ?></b> — <?php echo esc_html( $result['meta'] ); ?> · <?php echo esc_html( $result['detail'] ); ?>
+		</figcaption>
+	</figure>
+	<?php
+}
+
+/**
+ * The unaligned original, for a case with no prepared pair.
+ *
+ * The whole side-by-side photograph, shown as one image with both states
+ * visible at once. No slider: sliding between two photographs that do not line
+ * up is worse than simply showing them side by side and saying so.
+ */
+function veahealth_before_after_plain( $result ) {
+	$base = VEAHEALTH_URI . '/assets/img/results/' . $result['img'];
+	?>
+	<figure data-anim="up">
+		<div class="ba ba--plain">
+			<img class="ba-img" src="<?php echo esc_url( $base . '-900.webp' ); ?>"
+			     srcset="<?php echo esc_attr( $base . '-500.webp 500w, ' . $base . '-900.webp 900w' ); ?>"
+			     sizes="(min-width: 900px) 50vw, 100vw"
+			     alt="<?php echo esc_attr( $result['alt'] ); ?>" loading="lazy" decoding="async">
 			<span class="ba-label ba-label--l"><?php esc_html_e( 'Before', 'veahealth' ); ?></span>
 			<span class="ba-label ba-label--r"><?php esc_html_e( 'After', 'veahealth' ); ?></span>
 		</div>

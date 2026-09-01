@@ -443,9 +443,43 @@ a.card:hover .card-arrow svg{transform:translateX(4px);}
   touch-action:pan-y;user-select:none;-webkit-user-select:none;
 }
 .ba-img{display:block;width:100%;height:auto;}
-.ba-top{position:absolute;inset:0;overflow:hidden;width:50%;}
-.ba-top img{position:absolute;top:0;left:0;height:100%;width:auto;max-width:none;object-fit:cover;}
-.ba-handle{
+/*
+ * The two photographs are aligned and identically cropped, so the top one sits
+ * exactly over the bottom one and a single clip-path decides how much of it
+ * shows. One property, two interactions: an inset for the divider, a circle for
+ * the lens — which is why dragging and hovering can share the same element
+ * without either one needing to know the other exists.
+ */
+.ba-top{position:absolute;inset:0;overflow:hidden;
+  clip-path:inset(0 calc(100% - var(--ba-pos, 50%)) 0 0);
+  transition:clip-path .12s linear;}
+.ba-top img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+/*
+ * A mask rather than a clip-path for the lens, because clip-path has only a
+ * hard edge. A radial gradient feathers the last fifth of the radius, so the
+ * result fades into the original instead of being stamped on top of it —
+ * which is the difference between a transformation and a sticker.
+ */
+.ba[data-mode="lens"] .ba-top{
+  clip-path:none;
+  -webkit-mask-image:radial-gradient(circle var(--ba-r, 0px) at var(--ba-x, 50%) var(--ba-y, 50%),
+    #000 0, #000 78%, transparent 100%);
+  mask-image:radial-gradient(circle var(--ba-r, 0px) at var(--ba-x, 50%) var(--ba-y, 50%),
+    #000 0, #000 78%, transparent 100%);
+  transition:-webkit-mask-image .18s var(--ease-out), mask-image .18s var(--ease-out);}
+.ba[data-mode="lens"] .ba-handle,
+.ba[data-mode="lens"] .ba-label{transition:opacity .2s var(--ease-out);opacity:0;}
+.ba--plain .ba-label{position:absolute;}
+
+/* The invitation, which leaves as soon as it has been accepted. */
+.ba-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
+  padding:.4em .9em;border-radius:99px;font-size:.76rem;letter-spacing:.06em;
+  text-transform:uppercase;background:rgba(9,18,22,.72);color:#eaf2f2;
+  backdrop-filter:blur(6px);pointer-events:none;
+  transition:opacity .3s var(--ease-out);}
+.ba[data-touched="1"] .ba-hint{opacity:0;}
+@media (hover:none){.ba-hint{display:none;}}
+.ba-handle{transition:opacity .2s var(--ease-out);
   position:absolute;top:0;bottom:0;left:50%;width:2px;background:#fff;
   box-shadow:0 0 0 1px rgba(15,36,40,.16), 0 0 22px rgba(0,0,0,.35);
   transform:translateX(-1px);cursor:ew-resize;

@@ -507,6 +507,19 @@
         label.textContent = '';
         return;
       }
+      /*
+       * On a before/after figure the lens is already the pointer's affordance,
+       * and it lands on the mouth — which is the one part of the picture the
+       * ring and its label were covering up. So the cursor gets out of the way
+       * there and only labels the figure while it is being dragged.
+       */
+      if (t.closest && t.closest('.ba[data-mode="lens"]')) {
+        root.classList.add('cursor-hidden');
+        label.textContent = '';
+        return;
+      }
+      root.classList.remove('cursor-hidden');
+
       var state = t.getAttribute('data-cursor')
         || (t.tagName === 'VIDEO' ? 'media'
         : (t.classList.contains('ba') ? 'drag' : 'link'));

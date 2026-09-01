@@ -147,41 +147,97 @@
   }
 
   /* ---------------------------------------------------------------------------
-     5. Before / after comparison slider
-        Built on a real <input type=range> so it is keyboard and screen-reader
-        operable for free.
+     5. Before / after — a lens on a mouse, a divider on a finger
+
+        Both photographs are pre-aligned, so the top one sits exactly over the
+        bottom one and a single clip-path decides how much of it shows. The
+        divider is an inset; the lens is a circle. Under both is a real
+        <input type=range>, which is what makes the thing keyboard operable and
+        screen-reader announced without any ARIA of its own.
+
+        Which mode a figure is in follows the pointer that touched it, not the
+        screen width: a laptop with a touchscreen gets whichever the visitor
+        actually used, and focusing the range with a keyboard returns it to the
+        divider, because there is no pointer to put a lens under.
      --------------------------------------------------------------------------- */
   function initBeforeAfter() {
-    $$('.ba').forEach(function (ba) {
-      var range  = $('.ba-range', ba);
-      var top    = $('.ba-top', ba);
-      var handle = $('.ba-handle', ba);
-      if (!range || !top || !handle) return;
+    var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-      function apply(v) {
-        top.style.width = v + '%';
+    $$('.ba[data-ba]').forEach(function (ba) {
+      var range  = $('.ba-range', ba);
+      var handle = $('.ba-handle', ba);
+      if (!range || !handle) return;
+
+      var raf = 0, want = null;
+
+      function divider(v) {
+        ba.dataset.mode = 'divider';
+        ba.style.setProperty('--ba-pos', v + '%');
         handle.style.left = v + '%';
       }
-      range.addEventListener('input', function () { apply(this.value); });
-      apply(range.value);
 
-      // dragging anywhere on the frame moves the handle
-      var dragging = false;
-      function fromPointer(clientX) {
-        var r = ba.getBoundingClientRect();
-        var pct = ((clientX - r.left) / r.width) * 100;
-        pct = Math.max(0, Math.min(100, pct));
-        range.value = pct;
-        apply(pct);
+      function lens(x, y) {
+        ba.dataset.mode = 'lens';
+        // Sized to the frame, so the lens covers a mouth at any rendered width.
+        ba.style.setProperty('--ba-r', Math.round(ba.clientWidth * 0.26) + 'px');
+        ba.style.setProperty('--ba-x', x + 'px');
+        ba.style.setProperty('--ba-y', y + 'px');
       }
-      ba.addEventListener('pointerdown', function (e) {
-        dragging = true;
-        ba.setPointerCapture(e.pointerId);
-        fromPointer(e.clientX);
-      });
+
+      function closeLens() {
+        ba.style.setProperty('--ba-r', '0px');
+      }
+
+      function schedule(fn) {
+        want = fn;
+        if (raf) return;
+        raf = requestAnimationFrame(function () { raf = 0; var f = want; want = null; if (f) f(); });
+      }
+
+      range.addEventListener('input', function () { divider(this.value); });
+      // Arriving by keyboard means there is no pointer to follow.
+      range.addEventListener('focus', function () { divider(range.value); });
+
+      divider(range.value);
+
+      var dragging = false;
+
+      function pct(clientX) {
+        var r = ba.getBoundingClientRect();
+        return Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100));
+      }
+
       ba.addEventListener('pointermove', function (e) {
-        if (dragging) fromPointer(e.clientX);
+        ba.dataset.touched = '1';
+        if (dragging) {
+          var v = pct(e.clientX);
+          range.value = v;
+          schedule(function () { divider(v); });
+          return;
+        }
+        if (e.pointerType === 'mouse' && fine.matches && !still.matches) {
+          var r = ba.getBoundingClientRect();
+          var x = e.clientX - r.left, y = e.clientY - r.top;
+          schedule(function () { lens(x, y); });
+        }
       });
+
+      ba.addEventListener('pointerleave', function () {
+        if (ba.dataset.mode === 'lens') closeLens();
+      });
+
+      ba.addEventListener('pointerdown', function (e) {
+        // A press means the divider, whatever the pointer: it is the mode you
+        // can hold still and read, and it is the only one a finger can drive.
+        dragging = true;
+        ba.dataset.touched = '1';
+        ba.setPointerCapture(e.pointerId);
+        var v = pct(e.clientX);
+        range.value = v;
+        divider(v);
+      });
+
       ba.addEventListener('pointerup', function (e) {
         dragging = false;
         if (ba.hasPointerCapture && ba.hasPointerCapture(e.pointerId)) ba.releasePointerCapture(e.pointerId);
