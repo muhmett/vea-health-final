@@ -247,6 +247,79 @@
   }
 
   /* ---------------------------------------------------------------------------
+     5b. Language menu
+
+        A disclosure, not a role="menu". These are links to pages, so the
+        browser's own behaviour is the right behaviour: Tab moves through them,
+        Enter follows one. What is added is only what a dropdown owes the
+        keyboard — Escape closes it and hands focus back to the button, arrows
+        walk the list for a pointer-free user, and a click anywhere else closes
+        it. Without JavaScript nothing can open the panel, so CSS drops the
+        button and lays the four links out flat instead: changing language is
+        not a thing to take away from somebody whose script did not load.
+     --------------------------------------------------------------------------- */
+  function initLangMenu() {
+    $$('[data-lang]').forEach(function (wrap) {
+      var btn  = $('.lang-btn', wrap);
+      var menu = $('.lang-menu', wrap);
+      if (!btn || !menu) return;
+
+      var links = function () { return $$('a', menu); };
+
+      function open(focusFirst) {
+        menu.hidden = false;
+        btn.setAttribute('aria-expanded', 'true');
+        if (focusFirst) { var a = links()[0]; if (a) a.focus(); }
+      }
+      function close(giveBack) {
+        menu.hidden = true;
+        btn.setAttribute('aria-expanded', 'false');
+        if (giveBack) btn.focus();
+      }
+      function isOpen() { return btn.getAttribute('aria-expanded') === 'true'; }
+
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        isOpen() ? close(false) : open(false);
+      });
+
+      btn.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); open(true); }
+      });
+
+      /*
+       * Escape is bound to the whole control, not to the panel. Opening with
+       * the mouse leaves focus on the button, so a handler on the panel alone
+       * never hears the key most people reach for first.
+       */
+      wrap.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          if (!isOpen()) return;
+          e.preventDefault();
+          close(true);
+          return;
+        }
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        var all = links();
+        if (!all.length || !menu.contains(document.activeElement)) return;
+        e.preventDefault();
+        var i = all.indexOf(document.activeElement);
+        ( e.key === 'ArrowDown' ? ( all[i + 1] || all[0] )
+                                : ( all[i - 1] || all[all.length - 1] ) ).focus();
+      });
+
+      // Leaving the whole control by any means closes it, so a menu never
+      // stays open behind the page the visitor has moved on to.
+      document.addEventListener('click', function (e) {
+        if (isOpen() && !wrap.contains(e.target)) close(false);
+      });
+      wrap.addEventListener('focusout', function (e) {
+        if (isOpen() && !wrap.contains(e.relatedTarget)) close(false);
+      });
+    });
+  }
+
+  /* ---------------------------------------------------------------------------
      6. Mobile navigation
      --------------------------------------------------------------------------- */
   function initNav() {
@@ -502,6 +575,7 @@
     initParallax();
     initCounters();
     initBeforeAfter();
+    initLangMenu();
     initNav();
     initMagnets();
     initConsent();

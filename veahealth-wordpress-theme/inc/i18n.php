@@ -596,22 +596,61 @@ function veahealth_lang_links() {
 	return $out;
 }
 
-/** The switcher markup. */
+/**
+ * The switcher: one button, not a row of four.
+ *
+ * Four language names sitting in the header ate as much room as the navigation
+ * itself and pushed the menu around at every breakpoint — for a control most
+ * visitors use once, if ever. A globe and the current code hold one slot; the
+ * names appear when asked for.
+ *
+ * A disclosure, not a role="menu": these are ordinary links to ordinary pages,
+ * and menu semantics would promise arrow-key application behaviour that a list
+ * of links should not have. The button carries aria-expanded, the panel is
+ * hidden with the hidden attribute, and the whole thing works from the keyboard
+ * with nothing else.
+ */
 function veahealth_lang_switcher() {
 	$links = veahealth_lang_links();
 	if ( count( $links ) < 2 ) {
 		return '';
 	}
-	$out = '<nav class="langs" aria-label="' . esc_attr__( 'Language', 'veahealth' ) . '">';
+
+	// Two switchers render per page — the header and the drawer — so the id
+	// that ties the button to its panel has to differ between them.
+	static $n = 0;
+	++$n;
+	$id = 'lang-menu-' . $n;
+
+	$current = veahealth_lang();
+	$conf    = veahealth_languages();
+	$label   = isset( $conf[ $current ] ) ? $conf[ $current ]['native'] : $current;
+
+	$out  = '<div class="lang" data-lang>';
+	$out .= sprintf(
+		'<button class="lang-btn" type="button" aria-expanded="false" aria-controls="%s" aria-label="%s">',
+		esc_attr( $id ),
+		/* translators: %s: the language currently being read, in its own name. */
+		esc_attr( sprintf( __( 'Language: %s. Choose another.', 'veahealth' ), $label ) )
+	);
+	$out .= veahealth_icon( 'globe' );
+	$out .= '<span class="lang-btn__code">' . esc_html( strtoupper( $current ) ) . '</span>';
+	$out .= '<span class="lang-btn__caret" aria-hidden="true">' . veahealth_icon( 'caret' ) . '</span>';
+	$out .= '</button>';
+
+	$out .= sprintf( '<ul class="lang-menu" id="%s" hidden>', esc_attr( $id ) );
 	foreach ( $links as $code => $link ) {
 		$out .= sprintf(
-			'<a href="%s" hreflang="%s" lang="%s"%s>%s</a>',
+			'<li><a href="%s" hreflang="%s" lang="%s"%s><span>%s</span>%s</a></li>',
 			esc_url( $link['url'] ),
 			esc_attr( $code ),
 			esc_attr( $code ),
 			$link['current'] ? ' aria-current="true"' : '',
-			esc_html( $link['native'] )
+			esc_html( $link['native'] ),
+			$link['current'] ? '<span class="lang-menu__tick" aria-hidden="true">' . veahealth_icon( 'check' ) . '</span>' : ''
 		);
 	}
-	return $out . '</nav>';
+	$out .= '</ul></div>';
+
+	return $out;
 }

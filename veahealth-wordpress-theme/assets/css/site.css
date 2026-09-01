@@ -909,10 +909,20 @@ a.card:hover .card-arrow svg{transform:translateX(4px);}
   position:fixed; inset:0; width:100%; height:100%;
   z-index:0; pointer-events:none; display:block;
 }
-.has-dust .site-topbar,
-.has-dust .site-header,
+/*
+ * Lift the page off the dust canvas, which sits at z-index 0.
+ *
+ * These were all given z-index:1 together, which put the header and main on
+ * the same level — and main comes later in the document, so it painted over
+ * the header. Nothing showed it while the header only ever sat above empty
+ * space, but anything the header opens downwards, like the language panel,
+ * disappeared behind the page. The header and the bar above it belong above
+ * main, as they already do everywhere else in this stylesheet.
+ */
 .has-dust main,
 .has-dust .site-footer{ position:relative; z-index:1; }
+.has-dust .site-topbar,
+.has-dust .site-header{ position:relative; z-index:3; }
 
 /*
  * Readable surfaces stay opaque. The ambient layer passes behind body copy, so
@@ -1005,22 +1015,56 @@ html:not(.has-dust) .foot-stage{ display:none; }
 
 
 /* ---------- language switcher ----------
-   Written in each language's own script, because "AR" tells an Arabic reader
-   nothing and العربية tells them everything at a glance. A language with no
-   translation of the current page is not listed at all rather than pointed at
-   a home page, so every option here leads somewhere real. */
-.langs{display:flex;align-items:center;gap:2px;}
-.langs a{
-  display:inline-block;padding:.42em .6em;border-radius:8px;
-  font-family:var(--f-mono);font-size:.68rem;letter-spacing:.06em;
-  color:var(--ink-2);text-decoration:none;white-space:nowrap;
-  transition:color .2s var(--ease-out), background .2s var(--ease-out);
+   One slot in the header, not four. The panel is anchored to the button's
+   inline end so it opens inwards in both directions — anchored to the left it
+   would hang off the edge of an Arabic page. */
+.lang{position:relative;}
+.lang-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:.44em .6em;border:1px solid transparent;border-radius:10px;
+  background:none;cursor:pointer;color:var(--ink-2);
+  font-family:var(--f-mono);font-size:.68rem;letter-spacing:.08em;
+  transition:color .2s var(--ease-out), background .2s var(--ease-out), border-color .2s var(--ease-out);
 }
-.langs a[lang="ar"]{font-family:"IBM Plex Sans Arabic",var(--f-body);font-size:.8rem;letter-spacing:0;}
-.langs a:hover{color:var(--ink);background:var(--teal-faint);}
-.langs a[aria-current]{color:var(--ink);font-weight:500;background:var(--teal-faint);}
-@media (max-width:860px){ .site-header .langs{display:none;} }
+.lang-btn svg{width:17px;height:17px;flex:none;}
+.lang-btn__caret svg{width:12px;height:12px;opacity:.8;transition:transform .25s var(--ease-out);}
+.lang-btn:hover{color:var(--ink);background:var(--teal-faint);}
+.lang-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+.lang-btn[aria-expanded="true"]{color:var(--ink);background:var(--teal-faint);border-color:var(--line);}
+.lang-btn[aria-expanded="true"] .lang-btn__caret svg{transform:rotate(180deg);}
 
-/* On a phone the switcher lives in the drawer, where there is room for it. */
-.mobile-nav .langs{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);gap:6px;}
-.mobile-nav .langs a{padding:.6em .9em;font-size:.78rem;border:1px solid var(--line);}
+.lang-menu{
+  position:absolute;top:calc(100% + 8px);inset-inline-end:0;z-index:130;
+  min-width:190px;margin:0;padding:6px;list-style:none;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--sh-2);
+}
+.lang-menu[hidden]{display:none;}
+.lang-menu a{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:.62em .7em;border-radius:8px;
+  color:var(--ink-2);text-decoration:none;font-size:.92rem;
+  transition:color .18s var(--ease-out), background .18s var(--ease-out);
+}
+.lang-menu a[lang="ar"]{font-family:"IBM Plex Sans Arabic",var(--f-body);}
+.lang-menu a:hover,.lang-menu a:focus-visible{color:var(--ink);background:var(--teal-faint);outline:none;}
+.lang-menu a[aria-current]{color:var(--ink);font-weight:500;}
+.lang-menu__tick{display:inline-flex;color:var(--teal);}
+.lang-menu__tick svg{width:14px;height:14px;}
+
+/* Without JavaScript nothing can open the panel, so it stops being a panel:
+   the button goes and the four links stand as an ordinary list. A visitor with
+   no JavaScript still gets to change language, which a hidden list would have
+   quietly taken away from them. */
+html:not(.js) .lang-btn{display:none;}
+html:not(.js) .lang-menu[hidden]{
+  display:flex;flex-wrap:wrap;gap:2px;position:static;
+  min-width:0;padding:0;border:0;box-shadow:none;background:none;
+}
+html:not(.js) .lang-menu a{padding:.42em .6em;font-size:.8rem;}
+html:not(.js) .lang-menu__tick{display:none;}
+
+/* In the drawer there is room below, so the panel drops rather than floats. */
+.mobile-nav .lang{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
+.mobile-nav .lang-btn{width:100%;justify-content:flex-start;border:1px solid var(--line);padding:.7em .9em;}
+.mobile-nav .lang-menu{position:static;margin-top:8px;min-width:0;box-shadow:none;}
