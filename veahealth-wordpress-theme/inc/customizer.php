@@ -35,7 +35,12 @@ function veahealth_defaults() {
 function veahealth_option( $key ) {
 	$defaults = veahealth_defaults();
 	$default  = isset( $defaults[ $key ] ) ? $defaults[ $key ] : '';
-	return get_theme_mod( 'veahealth_' . $key, $default );
+	/*
+	 * Filtered so the language layer can offer a translation of a default the
+	 * clinic has not overridden — and only of a default: anything they typed
+	 * themselves is their words in every language.
+	 */
+	return apply_filters( 'veahealth_option', get_theme_mod( 'veahealth_' . $key, $default ), $key );
 }
 
 /** The WhatsApp link, built from the number in the Customizer. */

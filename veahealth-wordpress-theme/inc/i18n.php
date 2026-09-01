@@ -554,6 +554,57 @@ function veahealth_lang_guard_singular() {
 add_action( 'template_redirect', 'veahealth_lang_guard_singular', 9 );
 
 /* ==========================================================================
+   Content that is stored, not written in the templates
+   ========================================================================== */
+
+/**
+ * Translate navigation labels.
+ *
+ * Menu items are rows in the database, so gettext never sees them and the
+ * navigation stayed in English while everything around it changed. The labels
+ * themselves are a small fixed set the importer already created through __(),
+ * so they are in the catalogue — this looks them up at render time.
+ *
+ * translate() rather than __() to be explicit that the string is a variable:
+ * the lookup is real, but no extractor could have found it here.
+ *
+ * A treatment name is not in the catalogue and comes back unchanged, which is
+ * correct — those are translated with their pages, not as interface.
+ */
+function veahealth_lang_menu_title( $title ) {
+	if ( veahealth_lang_default() === veahealth_lang() ) {
+		return $title;
+	}
+	return translate( $title, 'veahealth' );
+}
+add_filter( 'nav_menu_item_title', 'veahealth_lang_menu_title' );
+add_filter( 'the_title', 'veahealth_lang_menu_title' );
+
+/**
+ * Translate a Customizer value the clinic has not overridden.
+ *
+ * The headline and the strapline ship as defaults in English. Once somebody
+ * edits one it is their words and must be left exactly as typed — so only a
+ * value still identical to the default is looked up, and anything the clinic
+ * wrote survives every language.
+ *
+ * @param mixed  $value Stored or default value.
+ * @param string $key   Option key.
+ * @return mixed
+ */
+function veahealth_lang_option( $value, $key ) {
+	if ( veahealth_lang_default() === veahealth_lang() || ! is_string( $value ) || '' === $value ) {
+		return $value;
+	}
+	$defaults = function_exists( 'veahealth_defaults' ) ? veahealth_defaults() : array();
+	if ( ! isset( $defaults[ $key ] ) || $defaults[ $key ] !== $value ) {
+		return $value;                       // the clinic's own words
+	}
+	return translate( $value, 'veahealth' );
+}
+add_filter( 'veahealth_option', 'veahealth_lang_option', 10, 2 );
+
+/* ==========================================================================
    The switcher
    ========================================================================== */
 

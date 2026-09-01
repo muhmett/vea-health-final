@@ -170,7 +170,13 @@ class VeaHealth_Nav_Walker extends Walker_Nav_Menu {
 			'<a href="%s"%s>%s</a>',
 			esc_url( $item->url ),
 			$current,
-			esc_html( $item->title )
+			/*
+			 * Through the filter, not straight off the object. A custom walker
+			 * that reads $item->title bypasses nav_menu_item_title, which is
+			 * where the language layer translates a stored menu label — so the
+			 * navigation stayed in English while the page around it changed.
+			 */
+			esc_html( apply_filters( 'nav_menu_item_title', $item->title, $item, $args, $depth ) )
 		);
 	}
 	public function end_el( &$output, $item, $depth = 0, $args = null ) {
