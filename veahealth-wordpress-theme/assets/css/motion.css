@@ -194,6 +194,36 @@
 .menu-toggle[aria-expanded="true"] .bars i:nth-child(2) { opacity: 0; }
 .menu-toggle[aria-expanded="true"] .bars i:nth-child(3) { transform: translateY(-6.4px) rotate(-45deg); }
 
+/* While the overlay is up the header rides above it, so the X that closes the
+   menu is on top of the menu rather than beneath it, and reads against the
+   dark ground it now sits on. */
+.menu-open .site-header {
+  z-index: 130;
+  /* Riding above the overlay means the header's own pale ground would paint a
+     band across the top of it. Only the X should be left. */
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.menu-open .site-header .shell > *:not(.menu-toggle) { opacity: 0; pointer-events: none; }
+.menu-open .menu-toggle { color: var(--deep-ink); }
+
+/* The three lines sit on the right on a phone in every language. Its place is
+   a thumb-reach convention, not a reading-direction one — mirrored with the
+   text it lands under the other hand each time the language changes, which is
+   how it ended up somewhere nobody looked for it. Physical right, deliberately
+   not inset-inline-end. */
+@media (max-width: 999.98px){
+  .site-header .shell { position: relative; }
+  .menu-toggle {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-inline-start: 0;
+  }
+}
+
 .vh-menu {
   position: fixed;
   inset: 0;
@@ -235,13 +265,6 @@
   text-decoration: none;
   transform: translateY(105%);
   transition: color .3s var(--ease);
-}
-.vh-menu__item > a .idx {
-  font-family: var(--f-mono);
-  font-size: .68rem;
-  letter-spacing: .1em;
-  color: var(--teal-bright);
-  opacity: .7;
 }
 .vh-menu__item > a:hover,
 .vh-menu__item > a:focus-visible { color: var(--teal-bright); }

@@ -119,10 +119,9 @@ $vh_preview = array(
 	<div class="vh-menu__inner">
 		<p class="vh-menu__eyebrow"><?php esc_html_e( 'Navigate', 'veahealth' ); ?></p>
 		<ul class="vh-menu__list">
-			<?php foreach ( $vh_menu_items as $vh_i => $vh_item ) : ?>
+			<?php foreach ( $vh_menu_items as $vh_item ) : ?>
 				<li class="vh-menu__item">
 					<a href="<?php echo esc_url( $vh_item['url'] ); ?>" data-cursor="link">
-						<span class="idx"><?php echo esc_html( sprintf( '%02d', $vh_i + 1 ) ); ?></span>
 						<span><?php echo esc_html( $vh_item['label'] ); ?></span>
 					</a>
 				</li>

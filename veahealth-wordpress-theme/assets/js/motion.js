@@ -427,6 +427,15 @@
       open = next;
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
       menu.classList.toggle('is-open', open);
+      /*
+       * The close control is the same button that opened it, and that button
+       * lives inside the header — which has a stacking context of its own, so
+       * no z-index on the button itself can lift it above a full-screen
+       * overlay. The whole header has to rise, and only while the menu is up.
+       * Without this there is no way out on a touchscreen: no Escape key, and
+       * the X is painted underneath the thing it closes.
+       */
+      document.documentElement.classList.toggle('menu-open', open);
       document.body.style.overflow = open ? 'hidden' : '';
       if (lenis) { open ? lenis.stop() : lenis.start(); }
 
