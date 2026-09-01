@@ -39,10 +39,10 @@ $svc_count  = (int) wp_count_posts( 'service' )->publish;
 		 */
 		?>
 		<video muted playsinline preload="none" aria-hidden="true" tabindex="-1"
-		       data-src-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-1280.mp4' ); ?>"
-		       data-src-narrow="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.mp4' ); ?>"
-		       data-webm-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.webm' ); ?>"
-		       data-webm-narrow="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.webm' ); ?>"></video>
+		       data-av1-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-1280.av1.webm' ); ?>"
+		       data-av1-narrow="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.av1.webm' ); ?>"
+		       data-src-wide="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.mp4' ); ?>"
+		       data-src-narrow="<?php echo esc_url( VEAHEALTH_URI . '/assets/video/hero-scrub-900.mp4' ); ?>"></video>
 	</div>
 
 	<div class="shell">

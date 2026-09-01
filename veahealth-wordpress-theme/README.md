@@ -281,6 +281,32 @@ which has to be disclosed. While a token is configured the theme adds that
 paragraph to the privacy policy automatically and removes it again if you
 disconnect, so the policy never names a company you are not using.
 
+### The hero clip
+
+Scroll-scrubbed, which forces one constraint: every frame has to be a keyframe,
+because scrubbing seeks to arbitrary points and a frame that depends on its
+neighbours cannot be shown alone. All-intra is expensive, and the first cut
+spent that budget on H.264 — which gave each frame about **9.7 KB** where a
+clean 1280-wide intra frame wants four to eight times that. The footage was
+never the problem; the encode was starving it.
+
+Measured against the ungraded original, the same five frames each time:
+
+| | size | SSIM |
+|---|---|---|
+| H.264 all-intra, 20 fps (was live) | 959 KB | 0.867 |
+| H.264 all-intra, 12 fps, crf 23 | 2 982 KB | 0.969 |
+| **AV1 all-intra, 12 fps, crf 34** | **1 313 KB** | **0.946** |
+| AV1 all-intra, 12 fps, crf 38 | 988 KB | 0.931 |
+
+AV1 reaches at 1.3 MB what H.264 needs 3 MB for — and at the *same* weight as
+the old file it still scores 0.931. Twelve frames a second rather than twenty
+is the other half of it: scrubbing follows the scroll, not a clock, so the
+budget is better spent on fewer, better frames than on more, worse ones.
+
+Modern browsers get AV1; Safari before 17 and older Android cannot decode it
+and fall back to H.264. One file is fetched, never both.
+
 ### Phone alerts
 
 HubSpot notifies, but only after the lead has synced, only through its own app,

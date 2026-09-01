@@ -282,12 +282,29 @@
      * the element that gets indexed.
      */
     var d = video.dataset;
-    var h264 = video.canPlayType('video/mp4; codecs="avc1.42E01E"');
     var narrow = !wide.matches;
-    var src = h264
-      ? (narrow && d.srcNarrow ? d.srcNarrow : d.srcWide)
-      : (narrow && d.webmNarrow ? d.webmNarrow : d.webmWide);
-    if (!src) src = d.srcWide || d.webmWide;
+
+    /*
+     * AV1 first, H.264 only where AV1 cannot be decoded.
+     *
+     * Every frame here is a keyframe, because scrubbing seeks to arbitrary
+     * points and a frame that depends on its neighbours cannot be shown on its
+     * own. All-intra is expensive, and H.264 spends that budget badly: at the
+     * weight this hero can afford it was giving each frame about a fifth of
+     * the bits it needed, which is what made the footage look soft — the clip
+     * itself is fine. AV1 encodes the same frames far more efficiently, so the
+     * same page weight buys a visibly cleaner picture.
+     *
+     * H.264 stays for Safari before 17 and older Android, which cannot decode
+     * AV1 at all and would otherwise get nothing.
+     */
+    var av1 = video.canPlayType('video/webm; codecs="av01.0.05M.08"');
+    var h264 = video.canPlayType('video/mp4; codecs="avc1.42E01E"');
+
+    var src = '';
+    if (av1) src = narrow && d.av1Narrow ? d.av1Narrow : d.av1Wide;
+    if (!src && h264) src = narrow && d.srcNarrow ? d.srcNarrow : d.srcWide;
+    if (!src) src = d.srcWide || d.av1Wide;
     if (!src) return;
     video.src = src;
 
