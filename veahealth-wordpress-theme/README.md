@@ -348,6 +348,33 @@ so the theme adds that paragraph to the privacy policy while alerts are
 configured and removes it again if they are turned off — the same contract the
 HubSpot disclosure follows.
 
+### Four languages
+
+English keeps the root; French, Arabic and Spanish sit behind `/fr/`, `/ar/`
+and `/es/`. No plugin — the prefix is taken off the request before WordPress
+parses it, so every permalink and rewrite the site already has resolves
+unchanged, and a translated post is an ordinary post carrying its language and
+a group id. No meta means English, which leaves every existing post correct
+with no migration.
+
+**The vocabulary is fixed before the prose.** `inc/glossary.php` holds the 44
+clinical terms that carry the treatment pages. Arabic keeps two forms of each:
+the word patients search for leads, the precise one is given beside it on first
+use — write only غَرْسة سنّية and nobody finds the page, write only زراعة and it
+reads as an advert. Nine entries carry a note, three of which correct this
+market's usual wording rather than copying it (a graft is not a follicle; the
+sapphire is the blade, not the graft; shock loss is always said to be
+temporary).
+
+**Interface strings** are compiled to `languages/*.mo`. Written by hand rather
+than by msgfmt, which is not always on the box and is not needed for a format
+this small. Arabic takes six plural forms, not two, so a plural entry there is
+six strings — the difference between ٣ علاجات and ٣ علاج.
+
+Of 434 translatable strings, 156 are admin-only and are never rendered in
+another language: the locale filter returns the site's own locale inside
+wp-admin. The 278 the visitor can actually see are what gets translated.
+
 ### The particle field
 
 A drifting field that answers the pointer, takes momentum from the scroll, and
