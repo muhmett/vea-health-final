@@ -420,7 +420,11 @@ function veahealth_treatment_facts( $post_id, $p ) {
 				printf(
 					/* translators: %s: date the page was last edited */
 					esc_html__( 'Page last updated %s. Prices and protocols are reviewed by the partner clinic; your own plan is written for your case.', 'veahealth' ),
-					esc_html( get_the_modified_date( get_option( 'date_format' ), $post_id ) )
+					esc_html(
+						function_exists( 'veahealth_lang_date' )
+							? veahealth_lang_date( get_post_modified_time( 'U', true, $post_id ) )
+							: get_the_modified_date( get_option( 'date_format' ), $post_id )
+					)
 				);
 				?>
 			</p>
@@ -512,10 +516,13 @@ function veahealth_part_note( $text, $kind = 'plain' ) {
  * the data back to overrule them.
  *
  * @param string $slug Treatment slug.
+ * @param string $lang Language to build in. Empty builds the English source.
  * @return string
  */
-function veahealth_service_body_html( $slug ) {
-	$p = veahealth_service_parts( $slug );
+function veahealth_service_body_html( $slug, $lang = '' ) {
+	$p = ( '' !== $lang && function_exists( 'veahealth_service_parts_in' ) )
+		? veahealth_service_parts_in( $slug, $lang )
+		: veahealth_service_parts( $slug );
 	if ( ! $p ) {
 		return '';
 	}

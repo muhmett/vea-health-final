@@ -96,6 +96,19 @@ function veahealth_home_raw() {
  * @return string
  */
 function veahealth_lang() {
+	/*
+	 * An explicit override wins over the request. Building a French treatment
+	 * page from a request that has no prefix on it — the importer, WP-CLI, an
+	 * admin screen — is the whole reason this exists: without it the locale
+	 * filter below hands back the request's language and quietly overrules
+	 * switch_to_locale(), which is how a translated page ended up with English
+	 * table headings baked into it.
+	 */
+	$forced = veahealth_lang_forced();
+	if ( '' !== $forced ) {
+		return $forced;
+	}
+
 	static $lang = null;
 	if ( null !== $lang ) {
 		return $lang;
@@ -105,6 +118,24 @@ function veahealth_lang() {
 	$lang = veahealth_lang_default();
 	$lang = veahealth_lang_from_uri( isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '' );
 	return $lang;
+}
+
+/**
+ * Render as a given language, whatever the request says.
+ *
+ * Call with a code to switch, with '' to stop. Returns the code in force.
+ * Paired with switch_to_locale() by the callers that build content for a
+ * language other than the one being requested.
+ *
+ * @param string|null $set Language code to force, '' to clear, null to read.
+ * @return string
+ */
+function veahealth_lang_forced( $set = null ) {
+	static $forced = '';
+	if ( null !== $set ) {
+		$forced = ( '' !== $set && veahealth_lang_valid( $set ) ) ? $set : '';
+	}
+	return $forced;
 }
 
 /**
@@ -416,11 +447,30 @@ function veahealth_post_translations( $post_id ) {
  * site the moment this file was added.
  */
 function veahealth_lang_filter_query( $query ) {
-	if ( is_admin() || ! $query->is_main_query() || 'any' === $query->get( 'lang' ) ) {
+	if ( is_admin() || 'any' === $query->get( 'lang' ) ) {
 		return;
 	}
-	if ( $query->is_singular() ) {
+	if ( $query->is_main_query() && $query->is_singular() ) {
 		return;                                  // a permalink is unambiguous
+	}
+
+	/*
+	 * Secondary queries are filtered too, which is not fussiness: the related
+	 * treatments rail, the navigation's treatment list and the archive are all
+	 * get_posts() calls, and every one of them was offering the English page
+	 * as a related treatment at the bottom of the Arabic one. Filtering here
+	 * rather than at each call site also covers the next one somebody writes.
+	 *
+	 * Only the post types that have translations — anything else, a query for
+	 * attachments or a menu, is left alone rather than being made to carry a
+	 * meta condition it can never satisfy.
+	 */
+	$types      = (array) $query->get( 'post_type' );
+	$translated = array( 'page', 'post', 'service' );
+	if ( ! $query->is_main_query() ) {
+		if ( ! $types || ! array_intersect( $types, $translated ) ) {
+			return;
+		}
 	}
 
 	$lang = veahealth_lang();
@@ -652,6 +702,228 @@ function veahealth_lang_sync_pages() {
 	return $made;
 }
 
+/**
+ * A date in the language being read, without depending on a language pack.
+ *
+ * date_i18n() takes its month names from WordPress core's own translations,
+ * which are a separate download: on a site where the Arabic pack has not been
+ * installed, an Arabic page dated "September 1, 2026" is the result, and
+ * nothing in the theme can tell that it happened. The twelve names are small
+ * enough to carry here, so the theme's dates never depend on what else the
+ * site has installed.
+ *
+ * @param int|string $when Timestamp, or anything strtotime() understands.
+ * @return string
+ */
+function veahealth_lang_date( $when ) {
+	$time = is_numeric( $when ) ? (int) $when : strtotime( (string) $when );
+	if ( ! $time ) {
+		return '';
+	}
+	$lang = veahealth_lang();
+	if ( veahealth_lang_default() === $lang ) {
+		return date_i18n( get_option( 'date_format' ), $time );
+	}
+
+	$months = array(
+		'fr' => array( 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre' ),
+		'ar' => array( 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر' ),
+		'es' => array( 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre' ),
+	);
+	if ( ! isset( $months[ $lang ] ) ) {
+		return date_i18n( get_option( 'date_format' ), $time );
+	}
+
+	$day   = (int) gmdate( 'j', $time );
+	$month = $months[ $lang ][ (int) gmdate( 'n', $time ) - 1 ];
+	$year  = gmdate( 'Y', $time );
+
+	// Spanish writes the day and the year with "de"; the other two do not.
+	return 'es' === $lang
+		? sprintf( '%d de %s de %s', $day, $month, $year )
+		: sprintf( '%d %s %s', $day, $month, $year );
+}
+
+/**
+ * Run something as if the site were being read in a given language.
+ *
+ * Two things have to move together and neither is enough alone. switch_to_locale()
+ * changes which .mo gettext reads, and the theme's own language — the one the
+ * router derived from the URL — has to change with it, or the locale filter
+ * puts the request's language straight back.
+ *
+ * The textdomain is unloaded and loaded again around the switch because a
+ * domain already in memory stays in memory: without this the second language
+ * built in one run would come out in the first one's words.
+ *
+ * @param string   $lang     Language code.
+ * @param callable $callback What to run.
+ * @return mixed Whatever the callback returns.
+ */
+function veahealth_lang_render_as( $lang, $callback ) {
+	$locale = isset( veahealth_languages()[ $lang ] ) ? veahealth_languages()[ $lang ]['locale'] : '';
+	if ( ! $locale ) {
+		return $callback();
+	}
+
+	$was    = veahealth_lang_forced();
+	$switch = switch_to_locale( $locale );
+	veahealth_lang_forced( $lang );
+	/*
+	 * The second argument is what makes this work more than once. Without it
+	 * WordPress remembers the domain as deliberately unloaded and refuses to
+	 * load it again, so the first language in a run came out translated and
+	 * every one after it came out English.
+	 */
+	unload_textdomain( 'veahealth', true );
+	load_theme_textdomain( 'veahealth', VEAHEALTH_DIR . '/languages' );
+
+	$out = $callback();
+
+	veahealth_lang_forced( $was );
+	if ( $switch ) {
+		restore_previous_locale();
+	}
+	unload_textdomain( 'veahealth', true );
+	load_theme_textdomain( 'veahealth', VEAHEALTH_DIR . '/languages' );
+
+	return $out;
+}
+
+/**
+ * Create the treatment pages in every language.
+ *
+ * Same contract as the company pages: idempotent, matched on the translation
+ * group rather than the slug, and it never touches a translated post that
+ * already exists — an owner who rewrote a paragraph in the editor keeps their
+ * words the next time the importer runs.
+ *
+ * A treatment with no translation for a language is skipped entirely. The
+ * alternative is a page with an English body on an Arabic URL, which is worse
+ * for a reader than a treatment that is simply not there yet, and worse for
+ * search engines than a page that does not exist.
+ *
+ * The body is built inside switch_to_locale() because the treatment page is
+ * two kinds of text at once: the clinical prose, which comes from the
+ * translation file, and the furniture around it — section headings, table
+ * captions, the word for "Excellent" — which the renderers emit through
+ * gettext. Without the switch the second kind would come out English.
+ *
+ * @return int How many treatments were created.
+ */
+function veahealth_lang_sync_services() {
+	if ( ! function_exists( 'veahealth_service_meta_in' ) ) {
+		return 0;
+	}
+	$made = 0;
+
+	foreach ( veahealth_service_data() as $slug => $unused ) {
+		$source = get_page_by_path( $slug, OBJECT, 'service' );
+		if ( ! $source ) {
+			continue;
+		}
+		$group = (string) $source->ID;
+		update_post_meta( $source->ID, VEAHEALTH_GROUP_META, $group );
+
+		foreach ( veahealth_lang_codes() as $lang ) {
+			if ( veahealth_lang_default() === $lang ) {
+				continue;
+			}
+			$meta = veahealth_service_meta_in( $slug, $lang );
+			if ( ! $meta || empty( $meta['title'] ) || empty( $meta['slug'] ) ) {
+				continue;                    // not translated yet
+			}
+
+			$existing = get_posts(
+				array(
+					'post_type'        => 'service',
+					'post_status'      => 'any',
+					'posts_per_page'   => 1,
+					'no_found_rows'    => true,
+					'suppress_filters' => false,
+					'lang'             => 'any',
+					'meta_query'       => array(
+						'relation' => 'AND',
+						array( 'key' => VEAHEALTH_GROUP_META, 'value' => $group ),
+						array( 'key' => VEAHEALTH_LANG_META, 'value' => $lang ),
+					),
+				)
+			);
+			if ( $existing ) {
+				continue;
+			}
+
+			$body = veahealth_lang_render_as(
+				$lang,
+				static function () use ( $slug, $lang ) {
+					return veahealth_service_body_html( $slug, $lang );
+				}
+			);
+			if ( ! $body ) {
+				continue;
+			}
+
+			$id = wp_insert_post(
+				array(
+					'post_type'    => 'service',
+					'post_status'  => 'publish',
+					'post_title'   => $meta['title'],
+					'post_name'    => $meta['slug'],
+					'post_excerpt' => isset( $meta['excerpt'] ) ? $meta['excerpt'] : '',
+					'post_content' => $body,
+					'menu_order'   => $source->menu_order,
+					'meta_input'   => array(
+						VEAHEALTH_LANG_META  => $lang,
+						VEAHEALTH_GROUP_META => $group,
+					),
+				),
+				true
+			);
+			if ( is_wp_error( $id ) ) {
+				continue;
+			}
+
+			/*
+			 * The meta a treatment page reads: the illustration is shared with
+			 * the English page, its alt text and the schema fields are not.
+			 * Anything the translation does not supply falls back to the
+			 * English value rather than being left empty — an empty alt is a
+			 * picture with no description, not a translated one.
+			 */
+			$carry = array(
+				'_vh_art'            => get_post_meta( $source->ID, '_vh_art', true ),
+				'_vh_alt'            => isset( $meta['alt'] ) ? $meta['alt'] : get_post_meta( $source->ID, '_vh_alt', true ),
+				'_vh_seo_title'      => isset( $meta['seo_title'] ) ? $meta['seo_title'] : $meta['title'],
+				'_vh_procedure_type' => isset( $meta['procedure_type'] ) ? $meta['procedure_type'] : get_post_meta( $source->ID, '_vh_procedure_type', true ),
+				'_vh_body_location'  => isset( $meta['body_location'] ) ? $meta['body_location'] : get_post_meta( $source->ID, '_vh_body_location', true ),
+				'_vh_how_performed'  => isset( $meta['how_performed'] ) ? $meta['how_performed'] : get_post_meta( $source->ID, '_vh_how_performed', true ),
+				'_vh_preparation'    => isset( $meta['preparation'] ) ? $meta['preparation'] : get_post_meta( $source->ID, '_vh_preparation', true ),
+				'_vh_followup'       => isset( $meta['followup'] ) ? $meta['followup'] : get_post_meta( $source->ID, '_vh_followup', true ),
+			);
+			foreach ( $carry as $key => $value ) {
+				if ( '' !== $value && null !== $value ) {
+					update_post_meta( $id, $key, $value );
+				}
+			}
+
+			/*
+			 * Keep the translation in the same group as the English page. The
+			 * group names are translated on the way out, in the archive and in
+			 * the navigation, rather than by splitting one taxonomy into four:
+			 * three duplicate terms per group would divide the archive instead
+			 * of translating it.
+			 */
+			$terms = wp_get_object_terms( $source->ID, 'service_category', array( 'fields' => 'ids' ) );
+			if ( $terms && ! is_wp_error( $terms ) ) {
+				wp_set_object_terms( $id, $terms, 'service_category' );
+			}
+
+			++$made;
+		}
+	}
+	return $made;
+}
+
 /* ==========================================================================
    Content that is stored, not written in the templates
    ========================================================================== */
@@ -670,6 +942,78 @@ function veahealth_lang_sync_pages() {
  * A treatment name is not in the catalogue and comes back unchanged, which is
  * correct — those are translated with their pages, not as interface.
  */
+/**
+ * Translate the treatment group names.
+ *
+ * The three groups are one taxonomy shared by every language rather than four
+ * sets of terms, so that a treatment belongs to "Hair restoration" once and
+ * appears under it in all four languages. That leaves the name itself to be
+ * translated on the way out, which is what this does — in the navigation, in
+ * the archive, in the footer and in the breadcrumb, from a single place.
+ *
+ * @param WP_Term|mixed $term     The term.
+ * @param string        $taxonomy Its taxonomy.
+ * @return WP_Term|mixed
+ */
+function veahealth_lang_term_name( $term, $taxonomy ) {
+	if ( 'service_category' !== $taxonomy || is_admin() || ! isset( $term->name ) ) {
+		return $term;
+	}
+	$lang = veahealth_lang();
+	if ( veahealth_lang_default() === $lang || ! function_exists( 'veahealth_service_group_in' ) ) {
+		return $term;
+	}
+	$term->name = veahealth_service_group_in( $term->name, $lang );
+	return $term;
+}
+add_filter( 'get_term', 'veahealth_lang_term_name', 10, 2 );
+
+/**
+ * The same, for the calls that hand back a list.
+ *
+ * get_term is the filter for one term fetched by id, and the template that
+ * builds the breadcrumb does not use it: wp_get_post_terms( ..., 'names' )
+ * returns plain strings straight from the object cache, which is how the
+ * treatment page ended up with a French title under an English group heading.
+ * A list can hold term objects or, with the fields argument, names or slugs —
+ * only the first two are ours to touch.
+ *
+ * @param mixed $terms    Terms, names, slugs or ids.
+ * @param mixed $taxonomy Taxonomy, or the object ids depending on the filter.
+ * @return mixed
+ */
+function veahealth_lang_term_names( $terms, $taxonomy = null ) {
+	if ( ! is_array( $terms ) || is_admin() ) {
+		return $terms;
+	}
+	$lang = veahealth_lang();
+	if ( veahealth_lang_default() === $lang || ! function_exists( 'veahealth_service_group_in' ) ) {
+		return $terms;
+	}
+
+	foreach ( $terms as $key => $term ) {
+		if ( is_object( $term ) && isset( $term->taxonomy, $term->name ) && 'service_category' === $term->taxonomy ) {
+			$terms[ $key ]->name = veahealth_service_group_in( $term->name, $lang );
+			continue;
+		}
+		/*
+		 * A bare string is only translated when it is one of the three group
+		 * names. Anything else in the list is a slug or another taxonomy's
+		 * name and comes back untouched.
+		 */
+		if ( is_string( $term ) ) {
+			$translated = veahealth_service_group_in( $term, $lang );
+			if ( $translated !== $term ) {
+				$terms[ $key ] = $translated;
+			}
+		}
+	}
+	return $terms;
+}
+add_filter( 'get_terms', 'veahealth_lang_term_names', 10, 2 );
+add_filter( 'wp_get_object_terms', 'veahealth_lang_term_names', 10, 2 );
+add_filter( 'get_the_terms', 'veahealth_lang_term_names', 10, 2 );
+
 function veahealth_lang_menu_title( $title ) {
 	if ( veahealth_lang_default() === veahealth_lang() ) {
 		return $title;
