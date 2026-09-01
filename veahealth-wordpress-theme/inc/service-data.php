@@ -1863,35 +1863,35 @@ function veahealth_service_data() {
 				'intro' => '',
 				'items' => array(
 					array(
-						'q' => 'Is All-on-4 painful? +',
+						'q' => 'Is All-on-4 painful?',
 						'a' => 'The procedure is performed under local anesthesia or sedation — no pain during surgery. Post-op discomfort (mild swelling, pressure) is managed with prescribed medication and typically resolves within a week. Most patients report less discomfort than anticipated.',
 					),
 					array(
-						'q' => 'How long do All-on-4 implants last? +',
+						'q' => 'How long do All-on-4 implants last?',
 						'a' => 'The titanium implants themselves typically last 15–20+ years with proper care. The zirconia prosthesis is highly durable and may last the same timeframe, while acrylic bridges may require replacement after 10–12 years. Clinical studies confirm >93% implant survival at 18 years.',
 					),
 					array(
-						'q' => 'Can smokers receive All-on-4 implants? +',
+						'q' => 'Can smokers receive All-on-4 implants?',
 						'a' => 'Smokers are not excluded but tobacco significantly increases failure risk — nicotine reduces gingival blood flow and slows osseointegration. VeaHealth strongly advises reducing or stopping smoking at least 4–6 weeks before and after surgery to protect outcomes.',
 					),
 					array(
-						'q' => 'What if one implant fails? +',
+						'q' => 'What if one implant fails?',
 						'a' => 'A single failure rarely destabilizes the full arch — the remaining 3 implants maintain function. The failed fixture is removed, and options include bone grafting with replacement or switching to an All-on-6 configuration for added redundancy. Early detection through regular follow-ups is key.',
 					),
 					array(
-						'q' => 'Are Turkish implant warranties valid internationally? +',
+						'q' => 'Are Turkish implant warranties valid internationally?',
 						'a' => 'Yes. VeaHealth’s warranties cover implant fixtures and prosthetic components and are honored internationally. Documentation is provided at treatment completion, and the warranty remains valid even after you return to your home country — with remote coordination available.',
 					),
 					array(
-						'q' => 'Can people with bruxism get All-on-4? +',
+						'q' => 'Can people with bruxism get All-on-4?',
 						'a' => 'Yes, with precautions. Night guards and reinforced prosthetic materials are used to protect against excessive wear from grinding. VeaHealth evaluates bite forces during planning and designs the restoration to manage bruxism loads effectively.',
 					),
 					array(
-						'q' => 'How soon can I eat after the procedure? +',
+						'q' => 'How soon can I eat after the procedure?',
 						'a' => 'You receive a fixed provisional bridge the same day, so you are never without teeth. A soft diet is maintained for 6–8 weeks. Once osseointegration is confirmed and the final bridge placed, you resume a full, unrestricted diet.',
 					),
 					array(
-						'q' => 'Is there a metal-free option for titanium allergies? +',
+						'q' => 'Is there a metal-free option for titanium allergies?',
 						'a' => 'Yes. Zirconia implants are available as a metal-free alternative for patients with confirmed titanium hypersensitivity. Zirconia offers excellent biocompatibility and strength while eliminating metal contact entirely. VeaHealth assesses allergy status during initial consultation.',
 					),
 				),

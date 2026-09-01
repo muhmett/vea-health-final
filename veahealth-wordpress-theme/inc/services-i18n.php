@@ -65,7 +65,7 @@ function veahealth_service_i18n( $lang ) {
  * @return string[]
  */
 function veahealth_service_i18n_skip() {
-	return array( 'slug', 'image', 'good', 'bad', 'n', 'price', 'art', 'alt' );
+	return array( 'slug', 'image', 'good', 'bad', 'price', 'art', 'alt' );
 }
 
 /**
@@ -226,6 +226,11 @@ function veahealth_service_i18n_collect( $value, $skip, &$out ) {
 	 * A string with no letter in it is a number, a price or a symbol — "90–96%",
 	 * "€500 – €900", "1–2". Those are the same in every language, and counting
 	 * them as untranslated would report a finished treatment as 137 of 144.
+	 *
+	 * This is also why the recovery phase number is not on the skip list. It
+	 * holds "1" in most treatments and "Days 1–3", "Final visit" in others —
+	 * skipping the key left those four labels in English on an otherwise
+	 * Arabic page, while the letter test drops the plain numbers anyway.
 	 */
 	if ( is_string( $value ) && '' !== trim( $value ) && preg_match( '/\p{L}/u', $value ) ) {
 		$out[ $value ] = $value;
