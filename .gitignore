@@ -1,0 +1,4 @@
+# Byte-code left behind by the translation builders, which import their
+# sources as modules. Nothing here is input to anything.
+__pycache__/
+*.pyc

@@ -712,17 +712,22 @@ function veahealth_lang_sync_pages() {
  * enough to carry here, so the theme's dates never depend on what else the
  * site has installed.
  *
- * @param int|string $when Timestamp, or anything strtotime() understands.
+ * @param int|string $when   Timestamp, or anything strtotime() understands.
+ * @param string     $format Date format for the default language only, where
+ *                           the site's own setting is the long one and a card
+ *                           wants "27 Aug 2026". The other three read the same
+ *                           either way — day, month name, year — so they
+ *                           ignore it.
  * @return string
  */
-function veahealth_lang_date( $when ) {
+function veahealth_lang_date( $when, $format = '' ) {
 	$time = is_numeric( $when ) ? (int) $when : strtotime( (string) $when );
 	if ( ! $time ) {
 		return '';
 	}
 	$lang = veahealth_lang();
 	if ( veahealth_lang_default() === $lang ) {
-		return date_i18n( get_option( 'date_format' ), $time );
+		return date_i18n( $format ? $format : get_option( 'date_format' ), $time );
 	}
 
 	$months = array(
@@ -731,7 +736,7 @@ function veahealth_lang_date( $when ) {
 		'es' => array( 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre' ),
 	);
 	if ( ! isset( $months[ $lang ] ) ) {
-		return date_i18n( get_option( 'date_format' ), $time );
+		return date_i18n( $format ? $format : get_option( 'date_format' ), $time );
 	}
 
 	$day   = (int) gmdate( 'j', $time );
@@ -924,6 +929,117 @@ function veahealth_lang_sync_services() {
 	return $made;
 }
 
+/**
+ * Create the journal articles in every language.
+ *
+ * Same contract as the pages and the treatments: idempotent, matched on the
+ * translation group, and it never touches a translated post that already
+ * exists. An article with no translation for a language is skipped rather than
+ * created in English on a translated URL.
+ *
+ * Unlike a treatment, an article's body is stored whole rather than assembled
+ * from parts, so there is no locale to switch for — the prose in the file is
+ * the prose on the page.
+ *
+ * @return int How many articles were created.
+ */
+function veahealth_lang_sync_articles() {
+	if ( ! function_exists( 'veahealth_article_in' ) || ! function_exists( 'veahealth_blog_articles' ) ) {
+		return 0;
+	}
+	$made = 0;
+
+	foreach ( veahealth_blog_articles() as $article ) {
+		$source = get_page_by_path( $article['slug'], OBJECT, 'post' );
+		if ( ! $source ) {
+			continue;
+		}
+		$group = (string) $source->ID;
+		update_post_meta( $source->ID, VEAHEALTH_GROUP_META, $group );
+
+		foreach ( veahealth_lang_codes() as $lang ) {
+			if ( veahealth_lang_default() === $lang ) {
+				continue;
+			}
+			$t = veahealth_article_in( $article['slug'], $lang );
+			if ( empty( $t['title'] ) || empty( $t['slug'] ) || empty( $t['content'] ) ) {
+				continue;                    // not translated yet
+			}
+
+			$existing = get_posts(
+				array(
+					'post_type'        => 'post',
+					'post_status'      => 'any',
+					'posts_per_page'   => 1,
+					'no_found_rows'    => true,
+					'suppress_filters' => false,
+					'lang'             => 'any',
+					'meta_query'       => array(
+						'relation' => 'AND',
+						array( 'key' => VEAHEALTH_GROUP_META, 'value' => $group ),
+						array( 'key' => VEAHEALTH_LANG_META, 'value' => $lang ),
+					),
+				)
+			);
+			if ( $existing ) {
+				continue;
+			}
+
+			$id = wp_insert_post(
+				array(
+					'post_type'    => 'post',
+					'post_status'  => 'publish',
+					'post_title'   => $t['title'],
+					'post_name'    => $t['slug'],
+					'post_excerpt' => isset( $t['excerpt'] ) ? $t['excerpt'] : '',
+					'post_content' => $t['content'],
+					// The same date as the English article. A translation is
+					// the same piece of writing, and dating it "today" would
+					// put the whole journal in the wrong order in three
+					// languages at once.
+					'post_date'    => $source->post_date,
+					'post_date_gmt' => $source->post_date_gmt,
+					'meta_input'   => array(
+						VEAHEALTH_LANG_META  => $lang,
+						VEAHEALTH_GROUP_META => $group,
+					),
+				),
+				true
+			);
+			if ( is_wp_error( $id ) ) {
+				continue;
+			}
+
+			/*
+			 * The cover image and the reading time are shared with the English
+			 * article; the standfirst and the key points are not. A photograph
+			 * credit is a person's name and stays as it is.
+			 */
+			$carry = array(
+				'_vh_dek'        => isset( $t['dek'] ) ? $t['dek'] : get_post_meta( $source->ID, '_vh_dek', true ),
+				'_vh_read'       => get_post_meta( $source->ID, '_vh_read', true ),
+				'_vh_cover'      => get_post_meta( $source->ID, '_vh_cover', true ),
+				'_vh_credit'     => get_post_meta( $source->ID, '_vh_credit', true ),
+				'_vh_credit_url' => get_post_meta( $source->ID, '_vh_credit_url', true ),
+			);
+			foreach ( $carry as $key => $value ) {
+				if ( '' !== $value && null !== $value ) {
+					update_post_meta( $id, $key, $value );
+				}
+			}
+			update_post_meta( $id, '_vh_keys', isset( $t['keys'] ) ? $t['keys'] : array() );
+
+			$cats = wp_get_post_categories( $source->ID );
+			if ( $cats ) {
+				wp_set_post_categories( $id, $cats, false );
+			}
+
+			++$made;
+		}
+	}
+	return $made;
+}
+
 /* ==========================================================================
    Content that is stored, not written in the templates
    ========================================================================== */
@@ -956,14 +1072,32 @@ function veahealth_lang_sync_services() {
  * @return WP_Term|mixed
  */
 function veahealth_lang_term_name( $term, $taxonomy ) {
-	if ( 'service_category' !== $taxonomy || is_admin() || ! isset( $term->name ) ) {
+	if ( is_admin() || ! isset( $term->name ) ) {
 		return $term;
 	}
 	$lang = veahealth_lang();
-	if ( veahealth_lang_default() === $lang || ! function_exists( 'veahealth_service_group_in' ) ) {
+	if ( veahealth_lang_default() === $lang ) {
 		return $term;
 	}
-	$term->name = veahealth_service_group_in( $term->name, $lang );
+
+	if ( 'service_category' === $taxonomy && function_exists( 'veahealth_service_group_in' ) ) {
+		$term->name = veahealth_service_group_in( $term->name, $lang );
+		return $term;
+	}
+
+	/*
+	 * The journal's five categories, the same way: one taxonomy shared by all
+	 * four languages, with the name translated on the way out. The description
+	 * is translated too — it is printed under the heading on a category
+	 * archive, where an English sentence over Arabic articles is conspicuous.
+	 */
+	if ( 'category' === $taxonomy && function_exists( 'veahealth_article_cat_in' ) ) {
+		$found = veahealth_article_cat_in( $term->name, $lang );
+		$term->name = $found['name'];
+		if ( ! empty( $found['description'] ) ) {
+			$term->description = $found['description'];
+		}
+	}
 	return $term;
 }
 add_filter( 'get_term', 'veahealth_lang_term_name', 10, 2 );
@@ -992,9 +1126,19 @@ function veahealth_lang_term_names( $terms, $taxonomy = null ) {
 	}
 
 	foreach ( $terms as $key => $term ) {
-		if ( is_object( $term ) && isset( $term->taxonomy, $term->name ) && 'service_category' === $term->taxonomy ) {
-			$terms[ $key ]->name = veahealth_service_group_in( $term->name, $lang );
-			continue;
+		if ( is_object( $term ) && isset( $term->taxonomy, $term->name ) ) {
+			if ( 'service_category' === $term->taxonomy ) {
+				$terms[ $key ]->name = veahealth_service_group_in( $term->name, $lang );
+				continue;
+			}
+			if ( 'category' === $term->taxonomy && function_exists( 'veahealth_article_cat_in' ) ) {
+				$found = veahealth_article_cat_in( $term->name, $lang );
+				$terms[ $key ]->name = $found['name'];
+				if ( ! empty( $found['description'] ) ) {
+					$terms[ $key ]->description = $found['description'];
+				}
+				continue;
+			}
 		}
 		/*
 		 * A bare string is only translated when it is one of the three group
@@ -1103,6 +1247,32 @@ function veahealth_lang_front_page( $id ) {
 	return $tr ? $tr : $id;
 }
 add_filter( 'option_page_on_front', 'veahealth_lang_front_page' );
+
+/**
+ * Serve each language its own journal index.
+ *
+ * The same problem as the front page, and it was worse: WordPress recognises
+ * exactly one posts page, so /fr/journal/ was an ordinary page with nothing on
+ * it — hero, footer, and not one of the twenty French articles. They existed
+ * and were reachable only by a direct link. Pointing the option at the
+ * translation makes WordPress treat that page as the index it is, and the loop
+ * on it is already filtered to the language being read.
+ *
+ * @param mixed $id Stored posts page id.
+ * @return mixed
+ */
+function veahealth_lang_posts_page( $id ) {
+	static $busy = false;
+	if ( $busy || is_admin() || ! $id || veahealth_lang_default() === veahealth_lang() ) {
+		return $id;
+	}
+	$busy = true;
+	$tr   = veahealth_post_in( (int) $id, veahealth_lang() );
+	$busy = false;
+
+	return $tr ? $tr : $id;
+}
+add_filter( 'option_page_for_posts', 'veahealth_lang_posts_page' );
 
 /**
  * Translate a Customizer value the clinic has not overridden.

@@ -20,7 +20,7 @@ $read  = (int) get_post_meta( get_the_ID(), '_vh_read', true );
 			<?php if ( $cats ) : ?>
 				<?php echo esc_html( $cats[0]->name ); ?> <span aria-hidden="true">·</span>
 			<?php endif; ?>
-			<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'j M Y' ) ); ?></time>
+			<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( veahealth_lang_date( get_the_time( 'U' ), 'j M Y' ) ); ?></time>
 			<?php if ( $read ) : ?>
 				<span aria-hidden="true">·</span>
 				<?php

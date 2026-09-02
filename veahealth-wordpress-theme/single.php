@@ -42,7 +42,7 @@ while ( have_posts() ) :
 						<a href="<?php echo esc_url( get_category_link( $cats[0]->term_id ) ); ?>"><?php echo esc_html( $cats[0]->name ); ?></a>
 						<span aria-hidden="true">·</span>
 					<?php endif; ?>
-					<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
+					<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( veahealth_lang_date( get_the_time( 'U' ) ) ); ?></time>
 					<span aria-hidden="true">·</span>
 					<?php
 					/* translators: %d: minutes to read */

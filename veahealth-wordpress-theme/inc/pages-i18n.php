@@ -138,8 +138,13 @@ function veahealth_pages_i18n() {
 				'excerpt' => 'ملاحظات عن العلاج والسفر والتمييز، لمرضى ما زالوا يقرّرون هل يسافرون.',
 			),
 			'es' => array(
-				'title'   => 'Blog',
-				'slug'    => 'blog-es',
+				/*
+				 * Not "blog": slugs are unique per post type, the English page
+				 * already holds it, and WordPress would have suffixed this one
+				 * into /es/blog-2/. "Artículos" is what the section is.
+				 */
+				'title'   => 'Artículos',
+				'slug'    => 'articulos',
 				'excerpt' => 'Notas sobre tratamiento, viaje y criterio, para pacientes que aún están decidiendo si viajar.',
 			),
 		),

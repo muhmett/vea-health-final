@@ -242,6 +242,19 @@ function veahealth_install_run( $overwrite = false ) {
 		$counts['kept']
 	);
 
+	/*
+	 * The same treatments in the other three languages. After the English ones
+	 * exist and after their group terms are set, because each translation is
+	 * created against its source's id and copies its taxonomy.
+	 */
+	if ( function_exists( 'veahealth_lang_sync_services' ) ) {
+		$made = veahealth_lang_sync_services();
+		if ( $made ) {
+			/* translators: %d: number of translated treatment pages created. */
+			$log[] = sprintf( __( 'Translated treatments created: %d.', 'veahealth' ), $made );
+		}
+	}
+
 	/* ---- company pages ---- */
 	$pages = array();
 	$order = 10;
@@ -372,6 +385,18 @@ function veahealth_install_run( $overwrite = false ) {
 		$written,
 		count( $cats )
 	);
+
+	/*
+	 * And the same articles in the other three languages, after the English
+	 * ones exist and carry their categories.
+	 */
+	if ( function_exists( 'veahealth_lang_sync_articles' ) ) {
+		$made = veahealth_lang_sync_articles();
+		if ( $made ) {
+			/* translators: %d: number of translated articles created. */
+			$log[] = sprintf( __( 'Translated articles created: %d.', 'veahealth' ), $made );
+		}
+	}
 
 	/*
 	 * WordPress ships a post called "Hello world!" on every new install. It is

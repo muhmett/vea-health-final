@@ -6,7 +6,18 @@
  */
 
 get_header();
-veahealth_page_hero( __( 'Journal', 'veahealth' ), get_the_archive_title(), wp_strip_all_tags( get_the_archive_description() ) );
+
+/*
+ * Not get_the_archive_title(): it returns markup — "Category: <span>Costs and
+ * money</span>" — and the hero escapes what it is given, so every archive
+ * heading printed its own tags. The prefix is redundant here anyway, since the
+ * eyebrow above it already says which section this is.
+ */
+$vh_title = is_category() || is_tag() || is_tax()
+	? single_term_title( '', false )
+	: wp_strip_all_tags( get_the_archive_title() );
+
+veahealth_page_hero( __( 'Journal', 'veahealth' ), $vh_title, wp_strip_all_tags( get_the_archive_description() ) );
 ?>
 <section class="section">
 	<div class="shell">

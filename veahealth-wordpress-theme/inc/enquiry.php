@@ -186,7 +186,7 @@ function veahealth_enquiry_form() {
 			<span class="fs is-active"></span><span class="fs"></span><span class="fs"></span>
 		</div>
 
-		<div style="position:absolute;left:-9999px" aria-hidden="true">
+		<div class="hp" aria-hidden="true">
 			<label><?php esc_html_e( 'Company', 'veahealth' ); ?>
 				<input type="text" name="company" tabindex="-1" autocomplete="off">
 			</label>

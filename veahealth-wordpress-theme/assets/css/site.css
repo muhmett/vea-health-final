@@ -210,6 +210,19 @@ em{font-style:italic;}
 }
 .skip:focus{width:auto;height:auto;overflow:visible;clip-path:none;}
 
+/* honeypot */
+.hp{
+  /*
+   * The same trap the skip link was in: left:-9999px on an absolutely
+   * positioned box is invisible in a left-to-right page and ten thousand
+   * pixels of scroll in a right-to-left one, which is what the Arabic
+   * assessment form was doing. Clipped instead, and left out of the tab order
+   * by the markup rather than by being somewhere nobody can reach.
+   */
+  position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
+  white-space:nowrap;
+}
+
 /* ---------- layout ---------- */
 .shell{width:min(100% - var(--gutter)*2, var(--shell));margin-inline:auto;}
 .shell-narrow{width:min(100% - var(--gutter)*2, 780px);margin-inline:auto;}
