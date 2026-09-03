@@ -1275,6 +1275,82 @@ function veahealth_lang_posts_page( $id ) {
 add_filter( 'option_page_for_posts', 'veahealth_lang_posts_page' );
 
 /**
+ * Count only the language being read.
+ *
+ * The front page announces how many treatments the site documents and the
+ * archive repeats it, and both said 84 in every language — which is 21
+ * treatments multiplied by four. wp_count_posts() reads a cached aggregate
+ * straight off the posts table rather than running a WP_Query, so the filter
+ * that hides other languages from every query never sees it, and no call site
+ * could have got the number right by asking more carefully.
+ *
+ * Filtered here rather than fixed at the three call sites, for the same reason
+ * the posts page is: the next template that wants a count should get a true
+ * one without knowing any of this. The admin is left alone, where a count of
+ * everything is the correct answer.
+ *
+ * @param object $counts Counts per post status.
+ * @param string $type   Post type.
+ * @param string $perm   Permission context, unused.
+ * @return object
+ */
+function veahealth_lang_count_posts( $counts, $type, $perm ) {
+	if ( is_admin() || ! in_array( $type, array( 'page', 'post', 'service' ), true ) ) {
+		return $counts;
+	}
+
+	$lang = veahealth_lang();
+	static $cache = array();
+	$key = $type . '|' . $lang;
+	if ( isset( $cache[ $key ] ) ) {
+		return $cache[ $key ];
+	}
+
+	global $wpdb;
+
+	/*
+	 * English is the awkward one again: its posts carry no language meta at
+	 * all, so "is English" means "says en, or says nothing".
+	 */
+	if ( veahealth_lang_default() === $lang ) {
+		$where = '( m.meta_value IS NULL OR m.meta_value = %s )';
+	} else {
+		$where = 'm.meta_value = %s';
+	}
+
+	$rows = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT p.post_status, COUNT(*) AS num
+			   FROM {$wpdb->posts} p
+			   LEFT JOIN {$wpdb->postmeta} m
+			          ON m.post_id = p.ID AND m.meta_key = %s
+			  WHERE p.post_type = %s AND {$where}
+			  GROUP BY p.post_status",
+			VEAHEALTH_LANG_META,
+			$type,
+			$lang
+		)
+	);
+
+	// Same shape as the object core handed us — every status it knows about,
+	// zeroed, then filled in — so a caller reading ->publish or ->draft on a
+	// status with no posts still finds a number rather than a notice.
+	$out = clone $counts;
+	foreach ( get_object_vars( $out ) as $status => $ignored ) {
+		$out->$status = 0;
+	}
+	foreach ( (array) $rows as $row ) {
+		if ( isset( $out->{$row->post_status} ) || property_exists( $out, $row->post_status ) ) {
+			$out->{$row->post_status} = (int) $row->num;
+		}
+	}
+
+	$cache[ $key ] = $out;
+	return $out;
+}
+add_filter( 'wp_count_posts', 'veahealth_lang_count_posts', 10, 3 );
+
+/**
  * Translate a Customizer value the clinic has not overridden.
  *
  * The headline and the strapline ship as defaults in English. Once somebody
