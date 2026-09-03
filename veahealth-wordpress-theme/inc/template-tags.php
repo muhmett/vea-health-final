@@ -60,8 +60,11 @@ function veahealth_brand( $class = 'brand' ) {
 		 * own space instead of shifting the navigation when it arrives.
 		 */
 		$out .= sprintf(
-			'<img class="brand-mark" src="%s" alt="" width="40" height="38" decoding="async" fetchpriority="high">',
-			esc_url( VEAHEALTH_URI . '/assets/img/brand/mark.png' )
+			'<img class="brand-mark" src="%s" srcset="%s 256w, %s 512w" sizes="38px"'
+				. ' alt="" width="38" height="38" decoding="async" fetchpriority="high">',
+			esc_url( VEAHEALTH_URI . '/assets/img/brand/mark-256.webp' ),
+			esc_url( VEAHEALTH_URI . '/assets/img/brand/mark-256.webp' ),
+			esc_url( VEAHEALTH_URI . '/assets/img/brand/mark-512.webp' )
 		);
 		$out .= '<span><span class="brand-name">Vea<span>Health</span></span>'
 			. '<span class="brand-sub">' . esc_html( veahealth_option( 'city' ) ) . ' · ' . esc_html__( 'Türkiye', 'veahealth' ) . '</span></span>';
