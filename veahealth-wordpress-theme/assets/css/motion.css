@@ -213,14 +213,44 @@
    text it lands under the other hand each time the language changes, which is
    how it ended up somewhere nobody looked for it. Physical right, deliberately
    not inset-inline-end. */
-@media (max-width: 999.98px){
-  .site-header .shell { position: relative; }
+@media (max-width: 1279.98px){
+  /*
+   * Kept in the flow rather than pinned with position:absolute, because an
+   * absolutely positioned toggle reserves no width — and in Arabic, where the
+   * brand is also on the physical right, the logo and the three lines were
+   * drawn on top of one another. Reserving the space with padding does not
+   * work either: the label is "MENU" in three languages and "القائمة" in the
+   * fourth, so the width to reserve is not a number anyone can write down.
+   *
+   * In English the row runs left to right, so an auto start-margin puts the
+   * toggle at the far right. In Arabic the row runs the other way and being
+   * last no longer means being on the right, so it is ordered first instead —
+   * same physical corner, and it carries its own width with it.
+   */
   .menu-toggle {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    margin-inline-start: auto;
+  }
+  [dir="rtl"] .menu-toggle {
+    order: -1;
     margin-inline-start: 0;
+  }
+}
+
+/*
+ * On the narrowest phones the word does not fit beside the brand — at 320px
+ * the button hung 50 pixels off the side of the screen. Clipped rather than
+ * removed, because the word is the button's accessible name: display:none
+ * would leave a screen reader announcing an unlabelled button, and the three
+ * lines are only obvious if you can see them.
+ */
+@media (max-width: 399.98px){
+  .menu-toggle .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 

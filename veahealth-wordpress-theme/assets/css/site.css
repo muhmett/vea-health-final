@@ -300,6 +300,11 @@ em{font-style:italic;}
 .brand-name{font-family:var(--f-body);font-size:1.18rem;font-weight:600;letter-spacing:-.02em;line-height:1;}
 .brand-name span{font-weight:250;}
 .brand-sub{display:block;font-family:var(--f-mono);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);margin-top:3px;}
+/* "ISTANBUL · TÜRKIYE" is the widest thing in the lockup — wider than the name
+   above it — and on a 320px screen it was pushing the whole header off the
+   side. The city is in the top bar, the page title and the footer, so this is
+   the one place it can go without being lost. */
+@media (max-width:359.98px){ .site-header .brand-sub{display:none;} }
 
 .nav{margin-inline-start:auto;display:flex;align-items:center;gap:2px;}
 .nav > li{position:relative;}
@@ -795,11 +800,25 @@ a.card:hover .card-arrow svg{transform:translateX(4px);}
 }
 
 /* ---------- responsive nav switch ---------- */
-@media (max-width:1080px){
+/*
+ * 1280, not 1080. The row has to hold the brand, seven nav items, the language
+ * switcher and the assessment button, and how wide that is depends on the
+ * language: measured, the content needs 1106px in English, 1143 in French and
+ * 1182 in Spanish. At the old breakpoint every one of them overflowed —
+ * Spanish by 149px — across 1081 to about 1250, which is where a great many
+ * laptops sit. Arabic happened to fit, so the header was broken in three
+ * languages out of four and fine in the one it was most often checked in.
+ *
+ * The switch is now where the widest language fits: 1182 plus two 48px
+ * gutters. Below that everyone gets the menu button, which is the same
+ * arrangement in every language rather than one that depends on how long the
+ * word for "treatments" happens to be.
+ */
+@media (max-width:1279.98px){
   .nav,.nav-cta{display:none;}
   .burger{display:flex;}
 }
-@media (min-width:1081px){
+@media (min-width:1280px){
   .mobile-nav{display:none;}
 }
 

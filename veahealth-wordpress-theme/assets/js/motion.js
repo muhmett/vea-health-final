@@ -555,10 +555,20 @@
     document.body.appendChild(veil);
     gsap.set(veil, { scaleY: 0 });
 
-    // arriving: lift the veil away
-    gsap.fromTo(veil,
-      { scaleY: 1, transformOrigin: '50% 0%' },
-      { scaleY: 0, duration: 0.7, ease: 'expo.inOut' });
+    /*
+     * No arrival animation. There used to be one — the veil was set to cover
+     * the viewport and then lifted over 0.7s, so the page appeared to be
+     * revealed. It cannot work, because this file runs after the browser has
+     * already painted: what a visitor actually saw was the page, then a black
+     * screen dropped over it, then the page again. On a phone the black frame
+     * lasted long enough to look like a fault.
+     *
+     * The only way to lift a curtain is to have the curtain down before the
+     * first paint, which would mean shipping a page that is deliberately blank
+     * until JavaScript arrives — worse to look at, and a blank site if the
+     * script ever fails. So the veil is now only what it can be honestly: a
+     * wipe on the way OUT, covering the gap while the next page loads.
+     */
 
     document.addEventListener('click', function (e) {
       var a = e.target.closest('a');
