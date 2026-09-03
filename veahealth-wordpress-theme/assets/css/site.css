@@ -295,6 +295,8 @@ em{font-style:italic;}
 .site-header .shell{display:flex;align-items:center;gap:20px;padding-block:14px;}
 .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);flex:none;}
 .brand svg{height:38px;width:auto;}
+/* The mark is a bitmap, so it is sized by height and told to stay sharp. */
+.brand-mark{height:38px;width:auto;display:block;image-rendering:auto;}
 .brand-name{font-family:var(--f-body);font-size:1.18rem;font-weight:600;letter-spacing:-.02em;line-height:1;}
 .brand-name span{font-weight:250;}
 .brand-sub{display:block;font-family:var(--f-mono);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);margin-top:3px;}

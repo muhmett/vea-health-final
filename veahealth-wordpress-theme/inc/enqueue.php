@@ -171,6 +171,25 @@ function veahealth_preload_hero() {
 }
 add_action( 'wp_head', 'veahealth_preload_hero', 2 );
 
+/**
+ * The browser tab.
+ *
+ * The site shipped without any icon at all, so every tab and every bookmark
+ * showed the browser's default globe — on a site whose whole argument is that
+ * it is a real organisation you can check up on. WordPress's own Site Icon
+ * setting still wins if the clinic sets one in the admin.
+ */
+function veahealth_favicon() {
+	if ( has_site_icon() ) {
+		return;                              // the clinic's own choice
+	}
+	$brand = VEAHEALTH_URI . '/assets/img/brand/';
+	printf( '<link rel="icon" href="%s" sizes="32x32">' . "\n", esc_url( $brand . 'icon-32.png' ) );
+	printf( '<link rel="icon" href="%s" sizes="180x180">' . "\n", esc_url( $brand . 'icon-180.png' ) );
+	printf( '<link rel="apple-touch-icon" href="%s">' . "\n", esc_url( $brand . 'icon-180.png' ) );
+}
+add_action( 'wp_head', 'veahealth_favicon', 3 );
+
 /** No emoji script, no jQuery Migrate, no oEmbed discovery: none are used. */
 function veahealth_trim_head() {
 	remove_action( 'wp_head', 'print_emoji_detection_script', 7 );

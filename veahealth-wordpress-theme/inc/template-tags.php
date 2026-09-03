@@ -51,11 +51,19 @@ function veahealth_brand( $class = 'brand' ) {
 		$img = wp_get_attachment_image( $id, 'full', false, array( 'alt' => get_bloginfo( 'name' ), 'style' => 'height:38px;width:auto' ) );
 		$out .= $img;
 	} else {
-		$out .= '<svg viewBox="0 0 44 44" aria-hidden="true" focusable="false" style="height:34px;width:34px">'
-			. '<defs><linearGradient id="vh-brand" x1="0" y1="0" x2="1" y2="1">'
-			. '<stop offset="0" stop-color="#7FE3DD"/><stop offset="1" stop-color="#1E7A75"/></linearGradient></defs>'
-			. '<path fill="url(#vh-brand)" d="M32.2 6.6c-4.2 0-7.8 2.3-9.8 5.7-2-3.4-5.6-5.7-9.8-5.7C7.9 6.6 4 10.6 4 16.2c0 3.1 1.3 5.8 3.3 8.2 3.9 4.6 9.9 8.9 13.9 13.4a1.6 1.6 0 0 0 2.4 0c4-4.5 10-8.8 13.9-13.4 2-2.4 3.3-5.1 3.3-8.2 0-5.6-3.9-9.6-9-9.6Z"/></svg>'
-			. '<span><span class="brand-name">Vea<span>Health</span></span>'
+		/*
+		 * The mark is a raster because that is what it is — it was drawn as
+		 * artwork, not built as a shape, and pretending otherwise by tracing it
+		 * badly would look worse than shipping the pixels. Twice the display
+		 * size so it stays sharp on a retina screen, decoding async so it never
+		 * holds up the header, and given width and height so it reserves its
+		 * own space instead of shifting the navigation when it arrives.
+		 */
+		$out .= sprintf(
+			'<img class="brand-mark" src="%s" alt="" width="40" height="38" decoding="async" fetchpriority="high">',
+			esc_url( VEAHEALTH_URI . '/assets/img/brand/mark.png' )
+		);
+		$out .= '<span><span class="brand-name">Vea<span>Health</span></span>'
 			. '<span class="brand-sub">' . esc_html( veahealth_option( 'city' ) ) . ' · ' . esc_html__( 'Türkiye', 'veahealth' ) . '</span></span>';
 	}
 
