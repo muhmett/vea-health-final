@@ -6,6 +6,12 @@
  *
  * Run from this directory:  php check.php
  */
+if ( 'cli' !== PHP_SAPI ) {
+	// Build tooling, not a page. See artdump.php.
+	http_response_code( 404 );
+	exit;
+}
+
 define( 'ABSPATH', 1 );
 function add_filter() {}
 function __( $s, $d = '' ) { return $s; }
