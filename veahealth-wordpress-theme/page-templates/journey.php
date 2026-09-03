@@ -17,17 +17,17 @@ while ( have_posts() ) :
 endwhile;
 
 /*
- * Everything from the first stage to the aftercare is one scope: the lift
- * reads its floors out of it, so a stage added or removed moves the car
+ * Everything from the first stage to the aftercare is one scope: the timeline
+ * measures its nodes out of it, so a stage added or removed renumbers the rail
  * without anything here needing to be told.
  */
 $stages = veahealth_journey();
 ?>
-<div class="lift-scope" data-lift-scope>
-	<div class="lift-rail" aria-hidden="true">
-		<canvas data-lift></canvas>
+<div class="tl-scope" data-timeline-scope>
+	<div class="tl-rail" aria-hidden="true">
+		<canvas data-timeline></canvas>
 	</div>
-	<div class="lift-track">
+	<div class="tl-track">
 <?php
 $i = 0;
 foreach ( $stages as $j ) :
@@ -51,7 +51,7 @@ foreach ( $stages as $j ) :
 	<?php
 	$text = ob_get_clean();
 	?>
-	<section class="section<?php echo ( $i % 2 ) ? ' section--tint' : ''; ?>" data-lift-stop>
+	<section class="section<?php echo ( $i % 2 ) ? ' section--tint' : ''; ?>" data-timeline-step>
 		<div class="shell">
 			<div class="grid g-2" style="align-items:center;gap:clamp(28px,5vw,64px)">
 				<?php echo ( 0 === $i % 2 ) ? $text . $media : $media . $text; ?>
@@ -63,7 +63,7 @@ foreach ( $stages as $j ) :
 endforeach;
 ?>
 
-<section class="section" data-lift-stop>
+<section class="section" data-timeline-step>
 	<div class="shell shell-narrow">
 		<h2 data-anim="up"><?php esc_html_e( 'After you fly home', 'veahealth' ); ?></h2>
 		<p class="lede mt-24" data-anim="up">

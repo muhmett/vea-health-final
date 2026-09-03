@@ -109,7 +109,7 @@ if ( $vh_blog ) {
 $vh_menu_items[] = array( 'label' => __( 'Free assessment', 'veahealth' ), 'url' => veahealth_contact_url() );
 
 $vh_preview = array(
-	'art/hero-istanbul-bosphorus-1100.webp',
+	'art/hero-istanbul-mosque-1100.webp',
 	'clinic/vea-health-clinic-lounge-istanbul-900.webp',
 	'art/dsd-consultation-room-900.webp',
 	'results/hollywood-smile-zirconium-crowns-female-patient-900.webp',

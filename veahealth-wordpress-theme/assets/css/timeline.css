@@ -1,0 +1,63 @@
+/* The journey timeline.
+   A numbered rail down the reading edge of the stages, drawn by particles that
+   fall and settle onto it as the page is scrolled.
+
+   It replaces a lift car on a sticky rail. The lift read well on a wide screen
+   and badly on a phone, where it became a 68px box floating over the column and
+   took a 78px lane out of every section — on a 390px screen that is a fifth of
+   the width spent on decoration. This is in the flow instead: the rail lives in
+   a gutter the sections reserve, so it can never sit on top of a line of text.
+
+   The canvas carries its colours as custom properties so the drawing follows
+   the theme without JavaScript reading the palette. */
+
+.tl-scope{
+  --tl-ink: var(--teal);
+  --tl-dim: color-mix(in srgb, var(--teal) 30%, transparent);
+  --tl-num: var(--ink);
+  --tl-gutter: 44px;
+  position: relative;
+}
+
+/* The rail spans exactly the steps: it starts at the first one and stops at the
+   last, rather than running on into the call to action underneath. */
+.tl-rail{
+  position: absolute;
+  inset-block: 0;
+  /*
+   * Lined up with the content, not with the window. The scope runs edge to
+   * edge so the tinted bands can, but .shell is centred and capped at --shell
+   * — so on a wide screen a rail at inset 0 floats out in the margin, a long
+   * way from the column it is numbering. This repeats the shell's own sum.
+   */
+  inset-inline-start: max(var(--gutter), calc((100% - var(--shell)) / 2));
+  width: var(--tl-gutter);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Sticky, so the canvas is one viewport tall however long the journey gets.
+   A canvas the height of the whole scope would be four or five thousand pixels,
+   and at device-pixel-ratio 2 that is tens of megabytes of bitmap on a phone. */
+.tl-rail canvas{
+  position: sticky;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100vh;
+}
+
+/* The gutter is taken out of the inner column, not the section, so a tinted
+   band still reaches both edges of the screen. */
+.tl-scope .shell{ padding-inline-start: calc(var(--tl-gutter) + 10px); }
+
+@media (min-width: 1000px){
+  .tl-scope{ --tl-gutter: 72px; }
+  .tl-scope .shell{ padding-inline-start: calc(var(--tl-gutter) + 20px); }
+}
+
+/* Nothing moves for a reader who asked for nothing to move. The script draws a
+   plain rail with its numbers and stops, so the steps are still numbered — the
+   part that carries meaning stays, the part that was only motion goes. */
+@media (prefers-reduced-motion: reduce){
+  .tl-rail canvas{ opacity: 1; }
+}

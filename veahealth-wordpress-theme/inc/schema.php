@@ -270,7 +270,7 @@ function veahealth_social_meta() {
 			$image = veahealth_service_image( $post->ID, 'full' );
 		}
 	} elseif ( is_front_page() ) {
-		$image = VEAHEALTH_URI . '/assets/img/art/hero-istanbul-bosphorus-1600.webp';
+		$image = VEAHEALTH_URI . '/assets/img/art/hero-istanbul-mosque-1600.webp';
 	}
 
 	$tags = array(

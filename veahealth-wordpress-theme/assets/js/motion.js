@@ -233,13 +233,22 @@
       wrap.classList.add('is-ready');
       var duration = video.duration || 5;
 
+      /*
+       * How much scrolling plays the whole clip. It used to be 1.6 screens,
+       * which meant most visitors never reached the end of the film before the
+       * page had carried them past the hero. Eight tenths of one screen is a
+       * single unhurried flick of a thumb, and the clip is finished by the time
+       * the hero leaves.
+       */
+      var RUN = window.innerHeight * 0.8;
+
       gsap.to(state, {
         t: 1,
         ease: 'none',
         scrollTrigger: {
           trigger: hero,
           start: 'top top',
-          end: '+=' + (window.innerHeight * 1.6),
+          end: '+=' + RUN,
           scrub: 0.6,
           pin: false
         },
@@ -253,7 +262,8 @@
         }
       });
 
-      // the copy lifts and fades as the film runs
+      // The copy lifts and fades as the film runs, and clears a little before
+      // the last frames so they are not read through a paragraph.
       gsap.to('.hero-inner', {
         y: -60,
         opacity: 0.15,
@@ -261,7 +271,7 @@
         scrollTrigger: {
           trigger: hero,
           start: 'top top',
-          end: '+=' + (window.innerHeight * 1.2),
+          end: '+=' + (RUN * 0.75),
           scrub: 0.6
         }
       });

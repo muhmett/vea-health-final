@@ -8,7 +8,7 @@
 get_header();
 
 $hero_image = get_theme_mod( 'veahealth_hero_image' );
-$hero_src   = $hero_image ? wp_get_attachment_image_url( $hero_image, 'full' ) : VEAHEALTH_URI . '/assets/img/art/hero-istanbul-bosphorus-1600.webp';
+$hero_src   = $hero_image ? wp_get_attachment_image_url( $hero_image, 'full' ) : VEAHEALTH_URI . '/assets/img/art/hero-istanbul-mosque-1600.webp';
 $services   = get_posts( array( 'post_type' => 'service', 'posts_per_page' => 6, 'orderby' => 'menu_order', 'order' => 'ASC' ) );
 $results    = veahealth_results();
 $journey    = veahealth_journey();
@@ -23,7 +23,7 @@ $svc_count  = (int) wp_count_posts( 'service' )->publish;
 			and its playback position is driven by scroll, never by autoplay.
 		-->
 		<img src="<?php echo esc_url( $hero_src ); ?>"
-		     alt="<?php esc_attr_e( 'The Bosphorus at golden hour, an Ottoman mosque on the shoreline and a ferry crossing towards the Bosphorus bridge', 'veahealth' ); ?>"
+		     alt="<?php esc_attr_e( 'An Ottoman mosque from the air, its cascade of domes and its minarets above the rooftops, with the Sea of Marmara behind', 'veahealth' ); ?>"
 		     width="1600" height="900" fetchpriority="high" decoding="async">
 		<?php
 		/*
@@ -36,6 +36,12 @@ $svc_count  = (int) wp_count_posts( 'service' )->publish;
 		 *
 		 * No poster attribute: the still above is already that exact frame, and
 		 * a poster would only be a second copy of it, fetched and never seen.
+		 *
+		 * The AV1 encode needed a much higher quantiser than the old clip did.
+		 * This footage is a bright, highly detailed drone shot, and all-intra
+		 * AV1 at the setting that suited the previous dark, soft clip came out
+		 * at 3.3MB. At crf 50 and 52 it lands at 1.5MB and 0.8MB — the same
+		 * weight as before, for twice the running time.
 		 */
 		?>
 		<video muted playsinline preload="none" aria-hidden="true" tabindex="-1"

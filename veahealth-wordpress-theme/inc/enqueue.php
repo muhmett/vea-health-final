@@ -47,10 +47,10 @@ function veahealth_assets() {
 	 * are physical rather than directional — which keeps it small enough that
 	 * no other language pays for it.
 	 */
-	// The journey lift, on the one template that has floors to stop at.
+	// The journey timeline, on the one template that has steps to number.
 	if ( is_page_template( 'page-templates/journey.php' ) ) {
-		wp_enqueue_style( 'veahealth-lift', VEAHEALTH_URI . '/assets/css/lift.css', array( 'veahealth' ), veahealth_asset_version( '/assets/css/lift.css' ) );
-		wp_enqueue_script( 'veahealth-lift', VEAHEALTH_URI . '/assets/js/lift.js', array(), veahealth_asset_version( '/assets/js/lift.js' ), true );
+		wp_enqueue_style( 'veahealth-timeline', VEAHEALTH_URI . '/assets/css/timeline.css', array( 'veahealth' ), veahealth_asset_version( '/assets/css/timeline.css' ) );
+		wp_enqueue_script( 'veahealth-timeline', VEAHEALTH_URI . '/assets/js/timeline.js', array(), veahealth_asset_version( '/assets/js/timeline.js' ), true );
 	}
 
 	if ( function_exists( 'veahealth_lang' ) && 'ar' === veahealth_lang() ) {
@@ -166,7 +166,7 @@ function veahealth_preload_hero() {
 	}
 	printf(
 		'<link rel="preload" as="image" href="%s" fetchpriority="high">' . "\n",
-		esc_url( VEAHEALTH_URI . '/assets/img/art/hero-istanbul-bosphorus-1600.webp' )
+		esc_url( VEAHEALTH_URI . '/assets/img/art/hero-istanbul-mosque-1600.webp' )
 	);
 }
 add_action( 'wp_head', 'veahealth_preload_hero', 2 );
