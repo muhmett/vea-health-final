@@ -113,12 +113,12 @@ function veahealth_journey() {
 		array(
 			'title' => __( 'Treatment and planning', 'veahealth' ),
 			'meta'  => __( 'At the clinic', 'veahealth' ),
-			'text'  => __( 'Digital scans, smile design and the treatment itself, carried out by the partner clinical team. You see the plan on screen and approve it before work begins.', 'veahealth' ),
-			'img'   => 'dsd-consultation-room',
-			'alt'   => __( 'Consultation room with a wall screen showing a three-dimensional dental scan', 'veahealth' ),
+			'text'  => __( 'It starts with what you want — the result you have in mind and what matters most to you. The digital scans and smile design are then built around that, and the dentist takes you through the plan on screen. Nothing begins until you have seen it, changed what you wanted, and agreed.', 'veahealth' ),
+			'img'   => 'dsd-plan-explained',
+			'alt'   => __( 'Dentist pointing at a wall screen showing a digital smile design while a patient looks on in a consultation room', 'veahealth' ),
 			'list'  => array(
-				__( 'Intraoral scanning and digital smile design', 'veahealth' ),
-				__( 'Plan reviewed and approved with you before treatment', 'veahealth' ),
+				__( 'The dentist asks what result you want before anything is planned', 'veahealth' ),
+				__( 'The plan is shown on screen and changed with you until you agree', 'veahealth' ),
 				__( 'Shade matched under natural light', 'veahealth' ),
 			),
 		),
