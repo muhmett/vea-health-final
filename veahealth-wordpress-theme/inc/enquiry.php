@@ -282,10 +282,17 @@ function veahealth_enquiry_form() {
 				<input type="checkbox" name="consent" required>
 				<span>
 					<?php
-					$privacy = get_privacy_policy_url();
+					/*
+					 * The theme's own page first, because it is the one that
+					 * exists in four languages — get_privacy_policy_url()
+					 * returns the single page set in Settings, which is the
+					 * English one, and consent shown in Arabic has to link to
+					 * the text the visitor can actually read.
+					 */
+					$p       = veahealth_page( 'privacy-policy' );
+					$privacy = $p ? get_permalink( $p ) : get_privacy_policy_url();
 					if ( ! $privacy ) {
-						$p       = get_page_by_path( 'privacy-policy' );
-						$privacy = $p ? get_permalink( $p ) : home_url( '/privacy-policy/' );
+						$privacy = home_url( '/privacy-policy/' );
 					}
 					printf(
 						/* translators: %s: privacy policy link */

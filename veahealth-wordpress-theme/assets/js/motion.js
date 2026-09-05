@@ -337,9 +337,28 @@
   function initJourneyRail() {
     var rail  = $('.journey-rail');
     var track = $('.journey-track', rail || document);
-    if (!rail || !track || !wide.matches) return;
+    if (!rail || !track) return;
 
     var bar = $('.journey-progress span');
+
+    /*
+     * Narrow screens do not get the pin — the track is a snapping scroller
+     * there instead (see motion.css). The bar still means the same thing, so
+     * it follows the scroller rather than the pinned progress. Without this
+     * it sat at zero however far you swiped, which read as broken.
+     */
+    if (!wide.matches) {
+      if (bar) {
+        var follow = function () {
+          var room = track.scrollWidth - track.clientWidth;
+          var at   = Math.abs(track.scrollLeft);          // RTL reports it negative
+          bar.style.transform = 'scaleX(' + (room > 0 ? (at / room).toFixed(3) : 1) + ')';
+        };
+        track.addEventListener('scroll', follow, { passive: true });
+        follow();
+      }
+      return;
+    }
 
     var distance = function () {
       return Math.max(0, track.scrollWidth - window.innerWidth + parseFloat(getComputedStyle(track).paddingLeft) * 2);

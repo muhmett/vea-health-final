@@ -161,13 +161,7 @@ endif;
  * The two button labels are quoted word for word on the cookie policy page.
  * Reword either one and it has to be reworded there too, in every language.
  */
-$vh_cookie_page = get_page_by_path( 'cookie-policy' );
-if ( $vh_cookie_page && function_exists( 'veahealth_post_in' ) ) {
-	$vh_tr = veahealth_post_in( $vh_cookie_page->ID, veahealth_lang() );
-	if ( $vh_tr ) {
-		$vh_cookie_page = get_post( $vh_tr );
-	}
-}
+$vh_cookie_page = veahealth_page( 'cookie-policy' );
 ?>
 <aside class="cookie" role="region" aria-label="<?php esc_attr_e( 'Cookie choices', 'veahealth' ); ?>">
 	<h3><?php esc_html_e( 'Cookies', 'veahealth' ); ?></h3>

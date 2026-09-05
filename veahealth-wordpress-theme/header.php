@@ -69,7 +69,7 @@
 	echo veahealth_treatment_links( true );
 	echo '<p class="m-group">' . esc_html__( 'Company', 'veahealth' ) . '</p><div class="m-sub">';
 	foreach ( veahealth_default_pages() as $slug => $label ) {
-		$page = get_page_by_path( $slug );
+		$page = veahealth_page( $slug );
 		if ( $page ) {
 			printf( '<a href="%s">%s</a>', esc_url( get_permalink( $page ) ), esc_html( $label ) );
 		}
@@ -97,7 +97,7 @@ $vh_menu_items = array();
 $vh_menu_items[] = array( 'label' => __( 'Home', 'veahealth' ), 'url' => home_url( '/' ) );
 $vh_menu_items[] = array( 'label' => __( 'All treatments', 'veahealth' ), 'url' => get_post_type_archive_link( 'service' ) );
 foreach ( veahealth_default_pages() as $vh_slug => $vh_label ) {
-	$vh_page = get_page_by_path( $vh_slug );
+	$vh_page = veahealth_page( $vh_slug );
 	if ( $vh_page ) {
 		$vh_menu_items[] = array( 'label' => $vh_label, 'url' => get_permalink( $vh_page ) );
 	}

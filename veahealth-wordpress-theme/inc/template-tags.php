@@ -100,7 +100,7 @@ function veahealth_primary_nav() {
 		veahealth_treatment_links()
 	);
 	foreach ( veahealth_default_pages() as $slug => $label ) {
-		$page = get_page_by_path( $slug );
+		$page = veahealth_page( $slug );
 		if ( $page ) {
 			printf( '<li><a href="%s">%s</a></li>', esc_url( get_permalink( $page ) ), esc_html( $label ) );
 		}
@@ -406,7 +406,7 @@ function veahealth_cta_band( $title, $text, $note = '' ) {
 
 /** URL of the enquiry page, with a sensible fallback. */
 function veahealth_contact_url() {
-	$page = get_page_by_path( 'contact' );
+	$page = veahealth_page( 'contact' );
 	return $page ? get_permalink( $page ) : home_url( '/contact/' );
 }
 

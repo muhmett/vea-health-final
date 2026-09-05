@@ -620,6 +620,36 @@ function veahealth_post_in( $post_id, $lang ) {
 }
 
 /**
+ * A company page by its English slug, in the language being read.
+ *
+ * The theme builds its own navigation and its own buttons rather than leaning
+ * on a WordPress menu, and every one of them looked the page up with
+ * get_page_by_path( 'journey' ). That slug only ever matches the English page,
+ * so an Arabic reader was given an Arabic home page whose menu, whose "the
+ * journey in detail" button and whose free-assessment call to action all
+ * landed on English — the language held until the first click and then let go.
+ *
+ * wp_nav_menu_objects already had a filter doing this for WordPress menus.
+ * This is the same lookup for the hand-built ones: find the English page by
+ * slug, then hand back its translation when there is one.
+ *
+ * @param string $slug English slug, as the importer created it.
+ * @return WP_Post|null
+ */
+function veahealth_page( $slug ) {
+	$page = get_page_by_path( $slug );
+	if ( ! $page ) {
+		return null;
+	}
+	$lang = veahealth_lang();
+	if ( veahealth_lang_default() === $lang ) {
+		return $page;
+	}
+	$id = veahealth_post_in( $page->ID, $lang );
+	return $id ? get_post( $id ) : $page;
+}
+
+/**
  * Create or update the company pages in every language.
  *
  * Idempotent, and matched on the translation group rather than the slug: run

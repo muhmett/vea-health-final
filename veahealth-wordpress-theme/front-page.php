@@ -61,7 +61,7 @@ $svc_count  = (int) wp_count_posts( 'service' )->publish;
 				<a class="btn btn--primary btn--lg magnet" href="<?php echo esc_url( veahealth_contact_url() ); ?>" data-cursor="link">
 					<?php esc_html_e( 'Get a free assessment', 'veahealth' ); ?> <?php echo veahealth_icon( 'arrow' ); ?>
 				</a>
-				<?php $results_page = get_page_by_path( 'before-after' ); ?>
+				<?php $results_page = veahealth_page( 'before-after' ); ?>
 				<?php if ( $results_page ) : ?>
 					<a class="btn btn--ghost btn--lg" href="<?php echo esc_url( get_permalink( $results_page ) ); ?>" data-cursor="link">
 						<?php esc_html_e( 'See patient results', 'veahealth' ); ?>
@@ -193,7 +193,7 @@ $svc_count  = (int) wp_count_posts( 'service' )->publish;
 	<div class="journey-progress" aria-hidden="true"><span></span></div>
 
 	<div class="shell">
-		<?php $journey_page = get_page_by_path( 'journey' ); ?>
+		<?php $journey_page = veahealth_page( 'journey' ); ?>
 		<?php if ( $journey_page ) : ?>
 			<p class="mt-32">
 				<a class="btn btn--ghost" href="<?php echo esc_url( get_permalink( $journey_page ) ); ?>" data-cursor="link">

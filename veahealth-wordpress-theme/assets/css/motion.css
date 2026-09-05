@@ -398,6 +398,33 @@
   transform-origin: 0 50%;
 }
 
+/* Below the pin breakpoint the track is never moved by anything: the pinned
+   horizontal scrub is desktop-only, so on a phone four cards 1286px wide sat
+   inside an overflow:hidden rail with no transform and no scroller — you saw
+   cards one and two and the rest were unreachable. It reads as a section that
+   stops halfway through, because that is what it was.
+
+   Here it becomes what a row of cards should be on a touch screen: a snapping
+   scroller you swipe. The card width already leaves the next one peeking, so
+   the gesture advertises itself, and the progress bar under it follows the
+   scroll instead of the pin. */
+@media (max-width: 860.98px) {
+  .journey-track {
+    width: auto;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--gutter);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .journey-track::-webkit-scrollbar { display: none; }
+  .journey-card {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+}
+
 /* --------------------------------------------------------------------------
    6. Card media parallax
    -------------------------------------------------------------------------- */
