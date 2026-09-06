@@ -73,41 +73,6 @@ function veahealth_brand( $class = 'brand' ) {
 	return $out . '</a>';
 }
 
-/**
- * The primary menu. Falls back to a generated treatment menu so the theme is
- * usable the moment it is activated, before any menu has been assigned.
- */
-function veahealth_primary_nav() {
-	if ( has_nav_menu( 'primary' ) ) {
-		wp_nav_menu(
-			array(
-				'theme_location' => 'primary',
-				'container'      => false,
-				'menu_class'     => 'nav',
-				'depth'          => 2,
-				'fallback_cb'    => false,
-				'walker'         => new VeaHealth_Nav_Walker(),
-			)
-		);
-		return;
-	}
-	echo '<ul class="nav">';
-	printf( '<li><a href="%s">%s</a></li>', esc_url( home_url( '/' ) ), esc_html__( 'Home', 'veahealth' ) );
-	printf(
-		'<li class="has-sub"><a href="%s">%s</a><div class="subnav subnav--wide">%s</div></li>',
-		esc_url( get_post_type_archive_link( 'service' ) ),
-		esc_html__( 'Treatments', 'veahealth' ),
-		veahealth_treatment_links()
-	);
-	foreach ( veahealth_default_pages() as $slug => $label ) {
-		$page = veahealth_page( $slug );
-		if ( $page ) {
-			printf( '<li><a href="%s">%s</a></li>', esc_url( get_permalink( $page ) ), esc_html( $label ) );
-		}
-	}
-	echo '</ul>';
-}
-
 /** The company pages the importer creates, in menu order. */
 function veahealth_default_pages() {
 	return array(
@@ -158,43 +123,6 @@ function veahealth_treatment_links( $mobile = false ) {
 		}
 	}
 	return $out;
-}
-
-/** Adds the submenu wrapper the stylesheet expects. */
-class VeaHealth_Nav_Walker extends Walker_Nav_Menu {
-	public function start_lvl( &$output, $depth = 0, $args = null ) {
-		$output .= '<div class="subnav">';
-	}
-	public function end_lvl( &$output, $depth = 0, $args = null ) {
-		$output .= '</div>';
-	}
-	public function start_el( &$output, $item, $depth = 0, $args = null, $id = 0 ) {
-		$classes = empty( $item->classes ) ? array() : (array) $item->classes;
-		if ( in_array( 'menu-item-has-children', $classes, true ) ) {
-			$classes[] = 'has-sub';
-		}
-		$current = in_array( 'current-menu-item', $classes, true ) ? ' aria-current="page"' : '';
-		if ( 0 === $depth ) {
-			$output .= '<li class="' . esc_attr( implode( ' ', array_filter( $classes ) ) ) . '">';
-		}
-		$output .= sprintf(
-			'<a href="%s"%s>%s</a>',
-			esc_url( $item->url ),
-			$current,
-			/*
-			 * Through the filter, not straight off the object. A custom walker
-			 * that reads $item->title bypasses nav_menu_item_title, which is
-			 * where the language layer translates a stored menu label — so the
-			 * navigation stayed in English while the page around it changed.
-			 */
-			esc_html( apply_filters( 'nav_menu_item_title', $item->title, $item, $args, $depth ) )
-		);
-	}
-	public function end_el( &$output, $item, $depth = 0, $args = null ) {
-		if ( 0 === $depth ) {
-			$output .= '</li>';
-		}
-	}
 }
 
 /** Breadcrumb trail, output as markup and reused by the schema graph. */

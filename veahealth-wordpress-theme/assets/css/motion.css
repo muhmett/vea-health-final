@@ -213,6 +213,19 @@
    text it lands under the other hand each time the language changes, which is
    how it ended up somewhere nobody looked for it. Physical right, deliberately
    not inset-inline-end. */
+/*
+ * The three lines are the whole navigation now, so they are never conditional
+ * on width. The horizontal bar they used to share the header with is gone: it
+ * carried a treatments dropdown fed by a stored menu built with the language
+ * filter off, so it hung eighty-odd items in four languages under one word,
+ * and it was the reason the header overflowed between 1081 and 1280px. The
+ * fullscreen panel says the same things with room to say them.
+ */
+@media (min-width: 1280px){
+  .menu-toggle { margin-inline-start: auto; }
+  [dir="rtl"] .menu-toggle { order: -1; margin-inline-start: 0; }
+}
+
 @media (max-width: 1279.98px){
   /*
    * Kept in the flow rather than pinned with position:absolute, because an
@@ -261,9 +274,20 @@
   background: var(--deep);
   color: var(--deep-ink);
   display: grid;
-  grid-template-columns: 1.25fr .75fr;
+  grid-template-columns: 1.1fr .95fr .75fr;
   visibility: hidden;
   clip-path: inset(0 0 100% 0);
+  overflow: hidden;                 /* the sweep leaves through the bottom */
+}
+
+/* The sheet that leads the panel down and carries on past the bottom edge. */
+.vh-menu__sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--teal);
+  pointer-events: none;
+  will-change: transform;
 }
 .vh-menu.is-open { visibility: visible; }
 .vh-menu__inner {
@@ -298,6 +322,49 @@
 }
 .vh-menu__item > a:hover,
 .vh-menu__item > a:focus-visible { color: var(--teal-bright); }
+
+/* The index is information — seven destinations, and which one you are on the
+   way to — so it is set in the mono face at label size and never competes. */
+.vh-menu__n {
+  font-family: var(--f-mono);
+  font-style: normal;
+  font-size: .6rem;
+  letter-spacing: .12em;
+  color: var(--teal-bright);
+  opacity: .55;
+  transform: translateY(-.35em);
+}
+.vh-menu__item > a:hover .vh-menu__n,
+.vh-menu__item > a:focus-visible .vh-menu__n { opacity: 1; }
+
+/* The treatments, where the header dropdown used to be. */
+.vh-menu__tx {
+  padding: clamp(90px, 12vh, 150px) clamp(24px, 3vw, 40px) 48px;
+  align-self: center;
+  overflow-y: auto;
+  max-height: 100vh;
+  border-inline-start: 1px solid var(--deep-line);
+}
+.vh-menu__tx-list { display: flex; flex-direction: column; }
+.vh-menu__tx .group-label {
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--deep-ink-3);
+  margin: 18px 0 7px;
+}
+.vh-menu__tx .group-label:first-child { margin-top: 0; }
+.vh-menu__tx a {
+  color: var(--deep-ink-2);
+  text-decoration: none;
+  font-size: .92rem;
+  line-height: 1.55;
+  padding: 3px 0;
+  transition: color .25s var(--ease);
+}
+.vh-menu__tx a:hover,
+.vh-menu__tx a:focus-visible { color: var(--teal-bright); }
 
 .vh-menu__meta {
   border-inline-start: 1px solid var(--deep-line);
@@ -337,9 +404,38 @@
 }
 .vh-menu__preview img.is-active { opacity: 1; transform: none; }
 
-@media (max-width: 900px) {
-  .vh-menu { grid-template-columns: 1fr; }
+@media (max-width: 1180px) {
+  .vh-menu { grid-template-columns: 1.15fr .85fr; }
   .vh-menu__meta { display: none; }
+}
+@media (max-width: 900px) {
+  /* One column, and the panel scrolls as a whole rather than in three
+     separate wells — three nested scrollers on a phone is three ways to get
+     stuck. The treatments keep their heading so the list is not mistaken for
+     a continuation of the one above it. */
+  .vh-menu {
+    grid-template-columns: 1fr;
+    align-content: start;
+    overflow-y: auto;
+  }
+  .vh-menu__inner { overflow: visible; padding-bottom: 8px; }
+  .vh-menu__tx {
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--deep-line);
+    padding: 26px clamp(24px, 6vw, 96px) 56px;
+    overflow: visible;
+    max-height: none;
+    align-self: start;
+  }
+  .vh-menu__tx-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 20px;
+  }
+  .vh-menu__tx .group-label { grid-column: 1 / -1; }
+}
+@media (max-width: 420px) {
+  .vh-menu__tx-list { grid-template-columns: 1fr; }
 }
 
 /* the toggle replaces the burger once the motion layer is live */
@@ -487,6 +583,9 @@
   .has-cursor button { cursor: auto; }
   .js .vh-line > span { transform: none !important; }
   .vh-menu__item > a { transform: none !important; }
+  .vh-menu__sweep { display: none !important; }
+  .vh-menu__tx,
+  .vh-menu__meta > * { opacity: 1 !important; transform: none !important; }
   .hero-film canvas { opacity: 1; }
   .journey-track { width: auto; flex-wrap: wrap; }
   .journey-card { width: 100%; }

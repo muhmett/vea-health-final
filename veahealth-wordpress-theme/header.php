@@ -46,7 +46,6 @@
 	<div class="site-header">
 		<div class="shell">
 			<?php echo veahealth_brand(); ?>
-			<?php veahealth_primary_nav(); ?>
 			<?php echo veahealth_lang_switcher(); ?>
 			<a class="btn btn--primary nav-cta magnet" href="<?php echo esc_url( veahealth_contact_url() ); ?>">
 				<?php esc_html_e( 'Free assessment', 'veahealth' ); ?>
@@ -116,18 +115,48 @@ $vh_preview = array(
 );
 ?>
 <nav class="vh-menu" id="vh-menu" aria-label="<?php esc_attr_e( 'Main', 'veahealth' ); ?>">
+	<?php
+	/*
+	 * A teal sheet that leads the panel down and carries on past the bottom
+	 * edge. One element, one transform: it is what makes the menu feel opened
+	 * rather than switched on.
+	 */
+	?>
+	<span class="vh-menu__sweep" aria-hidden="true"></span>
+
 	<div class="vh-menu__inner">
 		<p class="vh-menu__eyebrow"><?php esc_html_e( 'Navigate', 'veahealth' ); ?></p>
 		<ul class="vh-menu__list">
-			<?php foreach ( $vh_menu_items as $vh_item ) : ?>
+			<?php foreach ( $vh_menu_items as $vh_i => $vh_item ) : ?>
 				<li class="vh-menu__item">
 					<a href="<?php echo esc_url( $vh_item['url'] ); ?>" data-cursor="link">
+						<i class="vh-menu__n" aria-hidden="true"><?php echo esc_html( sprintf( '%02d', $vh_i + 1 ) ); ?></i>
 						<span><?php echo esc_html( $vh_item['label'] ); ?></span>
 					</a>
 				</li>
 			<?php endforeach; ?>
 		</ul>
 	</div>
+
+	<?php
+	/*
+	 * The treatments, grouped by category, in the language being read.
+	 *
+	 * This is where the header's dropdown used to live. That dropdown was fed
+	 * by a stored WordPress menu the importer built with the language filter
+	 * off, so it listed every treatment in all four languages — eighty-odd
+	 * items in one hanging column. veahealth_treatment_links() runs a filtered
+	 * query, so this list is the twenty-one of the current language, under
+	 * their three category headings.
+	 */
+	$vh_treatments = veahealth_treatment_links();
+	if ( $vh_treatments ) :
+		?>
+		<div class="vh-menu__tx">
+			<p class="vh-menu__eyebrow"><?php esc_html_e( 'Treatments', 'veahealth' ); ?></p>
+			<div class="vh-menu__tx-list"><?php echo $vh_treatments; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+		</div>
+	<?php endif; ?>
 
 	<div class="vh-menu__meta">
 		<div class="vh-menu__preview" aria-hidden="true">

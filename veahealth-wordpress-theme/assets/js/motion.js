@@ -440,17 +440,69 @@
     var open    = false;
     var lastFocus = null;
 
+    /*
+     * Four beats, in order, so the panel reads as one movement rather than a
+     * pile of effects:
+     *
+     *   1. a teal sheet comes down over the page,
+     *   2. it keeps going and leaves through the bottom, uncovering the panel
+     *      behind it — the dark ground is never seen arriving, only revealed,
+     *   3. the destinations rise into place one after another,
+     *   4. the treatments and the contact column settle in last.
+     *
+     * The whole thing is transforms and one clip-path, and it reverses on
+     * close because the timeline is played backwards rather than re-authored.
+     */
+    var sweep = $('.vh-menu__sweep', menu);
+
+    /*
+     * Every beat is placed at an absolute second on the timeline rather than
+     * relative to the one before it. Relative tokens read well until one of
+     * them fails to resolve — the sweep's exit was written as "just after the
+     * last tween", it never ran, and the teal sheet stayed parked over the
+     * whole panel. Absolute positions cannot come apart that way, and the
+     * overlaps are legible here as numbers.
+     */
     var tl = gsap.timeline({ paused: true })
-      .set(menu, { visibility: 'visible' })
-      .fromTo(menu,
-        { clipPath: 'inset(0 0 100% 0)' },
-        { clipPath: 'inset(0 0 0% 0)', duration: 0.85, ease: 'expo.inOut' })
+      .set(menu, { visibility: 'visible' });
+
+    /*
+     * The sheet's resting position is set here rather than in the stylesheet.
+     * A CSS transform on the same element is a second author for the property
+     * GSAP is tweening, and the two do not agree about what a percentage is
+     * measured against — which is why the sheet kept ending up back at zero.
+     * With JavaScript off the panel is visibility:hidden anyway, so nothing is
+     * lost by not declaring it in CSS.
+     */
+    if (sweep) gsap.set(sweep, { yPercent: -100 });
+
+    var t = 0;                                   // when the panel starts to open
+    if (sweep) {
+      /*
+       * One tween, top edge to bottom edge, not two meeting in the middle.
+       * Written as a pair — arrive, then leave — the second never took the
+       * property over from the first and the sheet stayed parked across the
+       * panel. One tween cannot lose an argument with itself, and a sheet
+       * that passes over the screen without stopping is the better movement
+       * anyway.
+       */
+      tl.fromTo(sweep, { yPercent: -100 },
+        { yPercent: 100, duration: 0.9, ease: 'power2.inOut' }, 0);
+      t = 0.42;                                  // revealed behind it as it goes
+    }
+
+    tl.fromTo(menu,
+      { clipPath: 'inset(0 0 100% 0)' },
+      { clipPath: 'inset(0 0 0% 0)', duration: 0.5, ease: 'expo.inOut' }, t)
       .fromTo(items,
         { y: '105%' },
-        { y: '0%', duration: 0.9, stagger: 0.055, ease: 'expo.out' }, '-=0.45')
+        { y: '0%', duration: 0.65, stagger: 0.04, ease: 'expo.out' }, t + 0.18)
+      .fromTo('.vh-menu__tx',
+        { opacity: 0, y: 22 },
+        { opacity: 1, y: 0, duration: 0.55, ease: 'expo.out' }, t + 0.44)
       .fromTo('.vh-menu__meta > *',
         { opacity: 0, y: 18 },
-        { opacity: 1, y: 0, duration: 0.7, stagger: 0.08, ease: 'expo.out' }, '-=0.6');
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.07, ease: 'expo.out' }, t + 0.48);
 
     function setOpen(next) {
       open = next;

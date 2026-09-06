@@ -335,7 +335,7 @@ em{font-style:italic;}
 }
 .nav-cta{margin-inline-start:10px;}
 
-.burger{display:none;margin-inline-start:auto;width:44px;height:44px;border-radius:var(--r-sm);align-items:center;justify-content:center;}
+.burger{display:flex;margin-inline-start:auto;width:44px;height:44px;border-radius:var(--r-sm);align-items:center;justify-content:center;}
 .burger span{display:block;width:20px;height:1.5px;background:var(--ink);position:relative;transition:background .2s;}
 .burger span::before,.burger span::after{content:"";position:absolute;left:0;width:20px;height:1.5px;background:var(--ink);transition:transform .35s var(--ease-out);}
 .burger span::before{top:-6px;} .burger span::after{top:6px;}
@@ -814,12 +814,16 @@ a.card:hover .card-arrow svg{transform:translateX(4px);}
  * arrangement in every language rather than one that depends on how long the
  * word for "treatments" happens to be.
  */
+/*
+ * The plain button and its list are the navigation at EVERY width now, not
+ * only on a phone. There is no horizontal bar left to fall back to: removing
+ * it without this left a reader with JavaScript off, above 1280px, holding a
+ * header with a logo and nothing to click. .has-motion swaps the button for
+ * the toggle and hides the list the moment the motion layer is up, so nobody
+ * who has JavaScript ever sees either.
+ */
 @media (max-width:1279.98px){
-  .nav,.nav-cta{display:none;}
-  .burger{display:flex;}
-}
-@media (min-width:1280px){
-  .mobile-nav{display:none;}
+  .nav-cta{display:none;}
 }
 
 /* ---------- print ---------- */
