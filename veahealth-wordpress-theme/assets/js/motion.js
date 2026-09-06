@@ -520,6 +520,8 @@
       document.body.style.overflow = open ? 'hidden' : '';
       if (lenis) { open ? lenis.stop() : lenis.start(); }
 
+      if (!open) menu.classList.remove('tx-open');
+
       if (open) {
         lastFocus = document.activeElement;
         tl.play();
@@ -531,6 +533,39 @@
         });
         if (lastFocus) lastFocus.focus();
       }
+    }
+
+    /*
+     * The treatments answer to their destination.
+     *
+     * Pointer and keyboard both open it, and it stays open while the pointer
+     * or the focus is anywhere inside the list — otherwise moving across to
+     * click a treatment would close the thing being reached for. Closing is
+     * deferred a frame so a pointer crossing the gap between the two columns
+     * does not read as leaving.
+     *
+     * Below 901px the stylesheet leaves the list open and this does nothing
+     * that matters: there is no hover on a touchscreen, and there the list is
+     * simply the next thing down the panel.
+     */
+    var txOpener = $('[data-opens-treatments]', menu);
+    var txPanel  = $('.vh-menu__tx', menu);
+    if (txOpener && txPanel) {
+      var txTimer = null;
+      var setTx = function (on) {
+        window.clearTimeout(txTimer);
+        if (on) {
+          menu.classList.add('tx-open');
+        } else {
+          txTimer = window.setTimeout(function () { menu.classList.remove('tx-open'); }, 140);
+        }
+      };
+      [txOpener, txPanel].forEach(function (el) {
+        el.addEventListener('mouseenter', function () { setTx(true); });
+        el.addEventListener('mouseleave', function () { setTx(false); });
+        el.addEventListener('focusin', function () { setTx(true); });
+        el.addEventListener('focusout', function () { setTx(false); });
+      });
     }
 
     toggle.addEventListener('click', function () { setOpen(!open); });

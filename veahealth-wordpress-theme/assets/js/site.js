@@ -577,6 +577,60 @@
   }
 
   /* --------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+     The journey strip in the header.
+
+     One stage at a time, taking turns. It lives here rather than in the motion
+     layer because it is not decoration — with the motion layer absent the
+     strip should still turn, and with JavaScript absent entirely the first
+     stage is already lit in the markup and the link still goes to the journey.
+
+     It stops turning whenever nobody can act on it: the tab is in the
+     background, the pointer is on it, something inside it has focus, or the
+     fullscreen menu is over the top of it. A header is sticky, so a thing that
+     moves in it moves for the whole page — it should not do that while the
+     reader is trying to do something else.
+     -------------------------------------------------------------------------- */
+  function initHeaderSteps() {
+    var strip = document.querySelector('[data-steps]');
+    if (!strip) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var items = [].slice.call(strip.querySelectorAll('.hdr-steps__item'));
+    var dots  = [].slice.call(strip.querySelectorAll('.hdr-steps__dots i'));
+    if (items.length < 2) return;
+
+    var at = 0;
+    var held = false;
+    var timer = null;
+    var WAIT = 3800;
+
+    function show(next) {
+      items[at].classList.remove('is-on');
+      items[at].classList.add('was-on');
+      if (dots[at]) dots[at].classList.remove('is-on');
+      at = next;
+      items[at].classList.remove('was-on');
+      items[at].classList.add('is-on');
+      if (dots[at]) dots[at].classList.add('is-on');
+    }
+
+    function tick() {
+      if (!held && !document.hidden && !document.documentElement.classList.contains('menu-open')) {
+        show((at + 1) % items.length);
+      }
+      timer = window.setTimeout(tick, WAIT);
+    }
+
+    function hold(on) { held = on; }
+    strip.addEventListener('mouseenter', function () { hold(true); });
+    strip.addEventListener('mouseleave', function () { hold(false); });
+    strip.addEventListener('focusin', function () { hold(true); });
+    strip.addEventListener('focusout', function () { hold(false); });
+
+    timer = window.setTimeout(tick, WAIT);
+  }
+
   function boot() {
     initReveal();
     initScrollChrome();
@@ -589,6 +643,7 @@
     initConsent();
     initForm();
     initAnchors();
+    initHeaderSteps();
   }
 
   if (document.readyState === 'loading') {

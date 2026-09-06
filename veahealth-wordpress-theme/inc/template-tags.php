@@ -73,6 +73,86 @@ function veahealth_brand( $class = 'brand' ) {
 	return $out . '</a>';
 }
 
+/**
+ * The five stages of the journey, as short labels.
+ *
+ * Four of them are the stages themselves; the fifth is the aftercare section
+ * the journey template adds after them. Both strings already exist and are
+ * already translated, so the strip carries no vocabulary of its own.
+ *
+ * @return string[]
+ */
+function veahealth_journey_labels() {
+	$out = array();
+	foreach ( veahealth_journey() as $stage ) {
+		if ( ! empty( $stage['title'] ) ) {
+			$out[] = $stage['title'];
+		}
+	}
+	$out[] = __( 'After you fly home', 'veahealth' );
+	return $out;
+}
+
+/**
+ * The journey strip that sits in the middle of the header.
+ *
+ * One stage is shown at a time and they take turns, because five stage names
+ * side by side do not fit beside a logo, a language switcher, a button and a
+ * menu — least of all in French or Arabic, where they are longest.
+ *
+ * It is a link to the journey page, not decoration: the whole point is that a
+ * visitor who has landed on a treatment page can see, without scrolling, that
+ * there is a documented process behind it.
+ *
+ * The markup carries every stage. The script only moves which one is lit, so
+ * with no JavaScript the first stage is shown and the link still works.
+ *
+ * @return string
+ */
+function veahealth_header_steps() {
+	$steps = veahealth_journey_labels();
+	if ( count( $steps ) < 2 ) {
+		return '';
+	}
+
+	$page = veahealth_page( 'journey' );
+	$href = $page ? get_permalink( $page ) : veahealth_contact_url();
+
+	$out = sprintf(
+		'<a class="hdr-steps" href="%s" data-steps aria-label="%s">',
+		esc_url( $href ),
+		esc_attr(
+			sprintf(
+				/* translators: %d: number of stages in the patient journey */
+				__( 'The journey, in %d stages', 'veahealth' ),
+				count( $steps )
+			)
+		)
+	);
+
+	/* Shown instead of the rotation for a reader who asked for no motion. */
+	$out .= '<span class="hdr-steps__still">' . esc_html__( 'The journey', 'veahealth' ) . '</span>';
+
+	$out .= '<span class="hdr-steps__win">';
+	foreach ( $steps as $i => $label ) {
+		$out .= sprintf(
+			'<span class="hdr-steps__item%s"><i aria-hidden="true">%s</i>%s</span>',
+			0 === $i ? ' is-on' : '',
+			esc_html( sprintf( '%02d', $i + 1 ) ),
+			esc_html( $label )
+		);
+	}
+	$out .= '</span>';
+
+	$out .= '<span class="hdr-steps__dots" aria-hidden="true">';
+	foreach ( $steps as $i => $unused ) {
+		$out .= '<i' . ( 0 === $i ? ' class="is-on"' : '' ) . '></i>';
+	}
+	$out .= '</span></a>';
+
+	return $out;
+}
+
 /** The company pages the importer creates, in menu order. */
 function veahealth_default_pages() {
 	return array(

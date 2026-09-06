@@ -46,6 +46,16 @@
 	<div class="site-header">
 		<div class="shell">
 			<?php echo veahealth_brand(); ?>
+
+			<?php
+			/*
+			 * The middle of the row, which the treatments bar used to fill.
+			 * The strip takes the space rather than leaving the header as a
+			 * logo at one end and three controls at the other.
+			 */
+			echo veahealth_header_steps();
+			?>
+
 			<?php echo veahealth_lang_switcher(); ?>
 			<a class="btn btn--primary nav-cta magnet" href="<?php echo esc_url( veahealth_contact_url() ); ?>">
 				<?php esc_html_e( 'Free assessment', 'veahealth' ); ?>
@@ -94,7 +104,7 @@
  */
 $vh_menu_items = array();
 $vh_menu_items[] = array( 'label' => __( 'Home', 'veahealth' ), 'url' => home_url( '/' ) );
-$vh_menu_items[] = array( 'label' => __( 'All treatments', 'veahealth' ), 'url' => get_post_type_archive_link( 'service' ) );
+$vh_menu_items[] = array( 'label' => __( 'All treatments', 'veahealth' ), 'url' => get_post_type_archive_link( 'service' ), 'tx' => true );
 foreach ( veahealth_default_pages() as $vh_slug => $vh_label ) {
 	$vh_page = veahealth_page( $vh_slug );
 	if ( $vh_page ) {
@@ -129,7 +139,7 @@ $vh_preview = array(
 		<ul class="vh-menu__list">
 			<?php foreach ( $vh_menu_items as $vh_i => $vh_item ) : ?>
 				<li class="vh-menu__item">
-					<a href="<?php echo esc_url( $vh_item['url'] ); ?>" data-cursor="link">
+					<a href="<?php echo esc_url( $vh_item['url'] ); ?>" data-cursor="link"<?php echo ! empty( $vh_item['tx'] ) ? ' data-opens-treatments' : ''; ?>>
 						<i class="vh-menu__n" aria-hidden="true"><?php echo esc_html( sprintf( '%02d', $vh_i + 1 ) ); ?></i>
 						<span><?php echo esc_html( $vh_item['label'] ); ?></span>
 					</a>

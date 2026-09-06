@@ -337,6 +337,47 @@
 .vh-menu__item > a:hover .vh-menu__n,
 .vh-menu__item > a:focus-visible .vh-menu__n { opacity: 1; }
 
+/*
+ * The treatments answer to the destination they belong to. Showing all
+ * twenty-one the moment the panel opens made the eye start in the middle
+ * column and the eight destinations — the thing the panel is for — read as a
+ * caption beside them. They wait for "All treatments" to be pointed at or
+ * focused instead, which is also what a reader expects of a list that sits
+ * beside a menu item.
+ *
+ * Only where there is a pointer to hover with. Below 900px the panel is one
+ * column and the list is simply the next thing down the page (see the narrow
+ * rules further down), so it stays open there.
+ */
+@media (min-width: 901px) {
+  .vh-menu__tx {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-14px);
+    transition: opacity .4s var(--ease), transform .5s var(--ease-out), visibility .4s;
+  }
+  [dir="rtl"] .vh-menu__tx { transform: translateX(14px); }
+  .vh-menu.tx-open .vh-menu__tx {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  /* A hint that the item has something behind it. */
+  .vh-menu__item > a[data-opens-treatments]::after {
+    content: "";
+    display: inline-block;
+    width: .42em;
+    height: .42em;
+    margin-inline-start: .34em;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: .35;
+    vertical-align: .28em;
+    transition: opacity .3s var(--ease);
+  }
+  .vh-menu.tx-open .vh-menu__item > a[data-opens-treatments]::after { opacity: 1; }
+}
+
 /* The treatments, where the header dropdown used to be. */
 .vh-menu__tx {
   padding: clamp(90px, 12vh, 150px) clamp(24px, 3vw, 40px) 48px;

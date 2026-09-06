@@ -333,6 +333,93 @@ em{font-style:italic;}
   grid-column:1/-1;padding:10px 12px 4px;font-family:var(--f-mono);
   font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
 }
+/* --------------------------------------------------------------------------
+   The journey strip, in the middle of the header.
+
+   Five stage names will not sit side by side next to a logo, a switcher, a
+   button and a menu — in French and Arabic they are half again as long as in
+   English — so one is shown at a time and they take turns. The dots say how
+   many there are and which one this is, which is the part that carries
+   meaning; the turning is what makes anyone look at it.
+
+   It is a link to the journey page. A visitor who landed on a treatment page
+   can see there is a documented process behind it without scrolling once.
+   -------------------------------------------------------------------------- */
+.hdr-steps{
+  display:none;                       /* only where there is room — see below */
+  flex:1 1 auto;
+  min-width:0;
+  align-items:center;
+  gap:14px;
+  margin-inline:clamp(16px,3vw,44px);
+  text-decoration:none;
+  color:var(--ink-2);
+  font-size:.8rem;
+}
+.hdr-steps:hover,.hdr-steps:focus-visible{color:var(--teal);}
+.hdr-steps__still{display:none;font-family:var(--f-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;}
+
+/* A fixed width, not a growing one. Left to fill the row the window pushed
+   the dots to the far end of the header, where they read as unrelated to the
+   label they belong to — and because each stage name is a different length, a
+   window sized to its content would have walked the dots left and right every
+   few seconds. Fixed, the pair holds still and long names ellipsise. */
+.hdr-steps__win{
+  position:relative;
+  flex:0 0 clamp(180px,19vw,290px);
+  min-width:0;
+  height:1.35em;
+  overflow:hidden;
+}
+.hdr-steps__item{
+  position:absolute;
+  inset-block-start:0;
+  inset-inline-start:0;
+  max-width:100%;
+  display:flex;
+  align-items:baseline;
+  gap:9px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  opacity:0;
+  transform:translateY(70%);
+  transition:opacity .5s var(--ease), transform .6s var(--ease-out);
+}
+.hdr-steps__item.is-on{opacity:1;transform:none;}
+/* The one that has just left goes up, not back down the way it came. */
+.hdr-steps__item.was-on{opacity:0;transform:translateY(-70%);}
+.hdr-steps__item i{
+  font-family:var(--f-mono);
+  font-style:normal;
+  font-size:.62rem;
+  letter-spacing:.1em;
+  color:var(--teal);
+  flex:none;
+}
+
+.hdr-steps__dots{display:flex;align-items:center;gap:5px;flex:none;}
+.hdr-steps__dots i{
+  display:block;
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--ink-3,currentColor);
+  opacity:.3;
+  transition:opacity .4s var(--ease), transform .4s var(--ease-out), background-color .4s var(--ease);
+}
+.hdr-steps__dots i.is-on{opacity:1;background:var(--teal);transform:scale(1.35);}
+
+/* Enough room only once the row is wide. Below this the header is a logo, a
+   switcher and the menu, and the strip would be the thing that overflowed. */
+@media (min-width:1024px){ .hdr-steps{display:flex;} }
+
+/* Nothing turns for a reader who asked for nothing to move: the strip becomes
+   a plain link to the same page, which is what it was always for. */
+@media (prefers-reduced-motion: reduce){
+  .hdr-steps__win,.hdr-steps__dots{display:none;}
+  .hdr-steps__still{display:block;}
+}
+
 .nav-cta{margin-inline-start:10px;}
 
 .burger{display:flex;margin-inline-start:auto;width:44px;height:44px;border-radius:var(--r-sm);align-items:center;justify-content:center;}
